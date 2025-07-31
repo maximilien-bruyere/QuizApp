@@ -16,10 +16,7 @@ import { FlashcardModule } from './flashcard/flashcard.module';
 import { LeaderboardModule } from './leaderboard/leaderboard.module';
 import { UploadModule } from './upload/upload.module';
 import { ThrottlerModule } from '@nestjs/throttler';
-import { UploadController } from './upload/upload.controller';
-import { UploadService } from './upload/upload.service';
 import { InformationModule } from './information/information.module';
-
 import { ExportModule } from './export/export.module';
 import { ImportModule } from './import/import.module';
 import { DatabaseService } from './database/database.service';
@@ -48,7 +45,7 @@ import { DatabaseController } from './database/database.controller';
     ExportModule,
     ImportModule,
   ],
-  controllers: [AppController, UploadController, DatabaseController],
-  providers: [AppService, UploadService, DatabaseService],
+  controllers: [AppController, DatabaseController],
+  providers: [AppService, DatabaseService],
 })
 export class AppModule {}
