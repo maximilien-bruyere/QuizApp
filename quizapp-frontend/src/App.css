@@ -1,0 +1,224 @@
+/* ============================================
+   FLASHCARDS RESPONSIVE ET ANIMATIONS
+   ============================================ */
+
+.flashcard-container {
+  perspective: 1000px;
+  width: 100%;
+  max-width: 100%;
+  height: 300px;
+  transform-style: preserve-3d;
+}
+
+/* Breakpoints responsive pour les flashcards */
+@media (min-width: 480px) {
+  .flashcard-container {
+    max-width: 400px;
+    height: 320px;
+  }
+}
+
+@media (min-width: 640px) {
+  .flashcard-container {
+    max-width: 500px;
+    height: 350px;
+  }
+}
+
+@media (min-width: 768px) {
+  .flashcard-container {
+    max-width: 600px;
+    height: 400px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .flashcard-container {
+    max-width: 700px;
+    height: 450px;
+  }
+}
+
+@media (min-width: 1280px) {
+  .flashcard-container {
+    max-width: 800px;
+    height: 500px;
+  }
+}
+
+.flashcard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) !important;
+  transform-style: preserve-3d !important;
+  cursor: pointer;
+}
+
+.flashcard.flipped {
+  transform: rotateY(180deg) !important;
+}
+
+.flashcard-front,
+.flashcard-back {
+  position: absolute !important;
+  width: 100% !important;
+  height: 100% !important;
+  backface-visibility: hidden !important;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+}
+
+.flashcard-front {
+  transform: rotateY(0deg) !important;
+}
+
+.flashcard-back {
+  transform: rotateY(180deg) !important;
+}
+
+/* Nouveau: Style pour le contenu des cartes */
+.flashcard-content {
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: 16px;
+}
+
+/* Contenu des flashcards responsive */
+.flashcard-front > div,
+.flashcard-back > div {
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+  max-width: 100%;
+  box-sizing: border-box;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 100%;
+  position: relative;
+  overflow: hidden;
+}
+
+@media (min-width: 640px) {
+  .flashcard-front > div,
+  .flashcard-back > div {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .flashcard-front > div,
+  .flashcard-back > div {
+    padding: 2rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .flashcard-front > div,
+  .flashcard-back > div {
+    padding: 2.5rem;
+  }
+}
+
+/* Effet de brillance sur les flashcards */
+.flashcard-front > div::before,
+.flashcard-back > div::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+  transition: left 0.6s ease;
+  pointer-events: none;
+}
+
+.flashcard:hover .flashcard-front > div::before,
+.flashcard:hover .flashcard-back > div::before {
+  left: 100%;
+}
+
+/* Typographie responsive dans les flashcards */
+.flashcard-content {
+  overflow-y: auto;
+  max-height: 80%;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(255, 255, 255, 0.3) transparent;
+}
+
+.flashcard-content::-webkit-scrollbar {
+  width: 4px;
+}
+
+.flashcard-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.flashcard-content::-webkit-scrollbar-thumb {
+  background-color: rgba(255, 255, 255, 0.3);
+  border-radius: 2px;
+}
+
+/* Animation d'apparition pour les flashcards */
+@keyframes flashcard-appear {
+  from {
+    opacity: 0;
+    transform: translateY(30px) rotateX(20deg);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) rotateX(0deg);
+  }
+}
+
+.flashcard-container {
+  animation: flashcard-appear 0.6s ease-out;
+}
+
+/* Responsive pour très petits écrans */
+@media (max-width: 479px) {
+  .flashcard-container {
+    height: 280px;
+    margin: 0 1rem;
+  }
+  
+  .flashcard-front > div,
+  .flashcard-back > div {
+    padding: 0.75rem;
+  }
+}
+
+/* Mode paysage mobile */
+@media (max-height: 600px) and (orientation: landscape) {
+  .flashcard-container {
+    height: 250px;
+  }
+}
+
+/* Accessibilité - réduction des animations */
+@media (prefers-reduced-motion: reduce) {
+  .flashcard,
+  .flashcard-front,
+  .flashcard-back {
+    transition-duration: 0.1s;
+  }
+  
+  .flashcard:hover {
+    transform: none;
+  }
+  
+  .flashcard-container {
+    animation: none;
+  }
+}
+
+/* High DPI displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .flashcard-front,
+  .flashcard-back {
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.35);
+  }
+}

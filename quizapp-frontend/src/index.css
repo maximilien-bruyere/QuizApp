@@ -1,0 +1,542 @@
+@import "tailwindcss";
+@import "./styles/responsive.css";
+@import "./styles/animations.css";
+@import "./styles/animations.css";
+
+
+.prose {
+  max-width: none;
+  line-height: 1.6;
+  font-family: "Inter", sans-serif;
+}
+
+@media (min-width: 768px) {
+  .prose {
+    line-height: 1.8;
+  }
+}
+
+/* Titres responsive */
+.prose h1 {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: #c084fc; /* violet clair */
+  margin-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .prose h1 {
+    font-size: 2.25rem;
+    margin-bottom: 1.5rem;
+  }
+}
+
+.prose h2 {
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #a855f7;
+  margin-bottom: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .prose h2 {
+    font-size: 1.75rem;
+    margin-bottom: 1rem;
+  }
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: #9333ea;
+  margin-bottom: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .prose h3 {
+    font-size: 1.5rem;
+    margin-bottom: 0.75rem;
+  }
+}
+
+/* Paragraphes responsive */
+.prose p {
+  color: #e5e7eb; /* texte gris clair */
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .prose p {
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+}
+
+/* Citations responsive */
+.prose blockquote {
+  border-left: 3px solid #9333ea;
+  padding-left: 0.75rem;
+  font-style: italic;
+  color: #d8b4fe;
+  background-color: #1f1f2e;
+  margin: 0.75rem 0;
+  font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+  .prose blockquote {
+    border-left: 4px solid #9333ea;
+    padding-left: 1rem;
+    margin: 1rem 0;
+    font-size: 1rem;
+  }
+}
+
+/* Code responsive */
+.prose code {
+  background-color: #1f2937;
+  padding: 0.125rem 0.375rem;
+  border-radius: 4px;
+  color: #facc15;
+  font-family: "Courier New", monospace;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .prose code {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+  }
+}
+
+/* Pre / bloc de code responsive */
+.prose pre {
+  background-color: #111827;
+  padding: 0.75rem;
+  border-radius: 6px;
+  overflow-x: auto;
+  color: #f8fafc;
+  font-size: 0.75rem;
+}
+
+@media (min-width: 768px) {
+  .prose pre {
+    padding: 1rem;
+    font-size: 0.875rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .prose pre {
+    font-size: 0.9rem;
+  }
+}
+
+/* Listes responsive */
+.prose ul, .prose ol {
+  list-style-type: disc;
+  padding-left: 1rem;
+  color: #d1d5db;
+  margin-bottom: 0.75rem;
+  font-size: 0.875rem;
+}
+
+.prose ol {
+  list-style-type: decimal;
+}
+
+@media (min-width: 768px) {
+  .prose ul, .prose ol {
+    padding-left: 1.5rem;
+    margin-bottom: 1rem;
+    font-size: 1rem;
+  }
+}
+
+.prose li {
+  margin-bottom: 0.25rem;
+}
+
+@media (min-width: 768px) {
+  .prose li {
+    margin-bottom: 0.5rem;
+  }
+}
+
+/* Liens responsive */
+.prose a {
+  color: #60a5fa;
+  text-decoration: underline;
+  word-break: break-word;
+}
+
+/* Images responsive */
+.prose img {
+  max-width: 100%;
+  height: auto;
+  margin: 0.75rem 0;
+  border-radius: 0.5rem;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.4);
+}
+
+@media (min-width: 768px) {
+  .prose img {
+    margin: 1rem 0;
+  }
+}
+
+.katex-table {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(6px);
+  border-radius: 12px;
+  padding: 1rem;
+}
+
+.katex-table td,
+.katex-table th {
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #fff;
+  text-shadow: 0 0 2px #000;
+  padding: 0.75rem 1rem;
+}
+
+.perspective {
+  perspective: 1000px;
+}
+.flip-card {
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+  position: relative;
+  width: 18rem; /* w-72 */
+  height: 11rem; /* h-44 */
+}
+.flip-card.flipped {
+  transform: rotateY(180deg);
+}
+.flip-card-face {
+  backface-visibility: hidden;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0; left: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.5rem; /* rounded-lg */
+  box-shadow: 0 10px 15px -3px rgba(76,29,149,0.3);
+  font-size: 1.875rem; /* text-3xl */
+  font-weight: bold;
+  background: linear-gradient(to bottom right, #1f5dfd, #6d28d9);
+  color: white;
+}
+.flip-card-back {
+  transform: rotateY(180deg);
+}
+
+/* styles.css ou tailwind.css */
+.underline-animate {
+  position: relative;
+  overflow: hidden;
+}
+.underline-animate::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: 0.1em;
+  width: 0;
+  height: 2px;
+  background: #ad47fe; 
+  transition: width 0.3s cubic-bezier(.4,0,.2,1), left 0.3s cubic-bezier(.4,0,.2,1);
+  z-index: 1;
+}
+.underline-animate:hover::after,
+.underline-animate.active::after {
+  width: 100%;
+  left: 0;
+}
+
+/* Styles pour les flashcards avec animation de retournement 3D */
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+/* Animation de survol pour les cartes de flashcards */
+.flashcard-container {
+  perspective: 1000px;
+}
+
+/* Styles pour les flashcards */
+.flashcard-container {
+  perspective: 1000px;
+  width: 400px;
+  height: 300px;
+}
+
+.flashcard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  transition: transform 0.8s;
+  transform-style: preserve-3d;
+}
+
+.flashcard.flipped {
+  transform: rotateY(180deg);
+}
+
+.flashcard-front, .flashcard-back {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.flashcard-back {
+  transform: rotateY(180deg);
+}
+
+/* Animation d'apparition pour les flashcards */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.flashcard {
+  animation: fadeInUp 0.5s ease-out;
+}
+
+/* Styles pour les boutons de difficulté */
+.difficulty-button {
+  transition: all 0.3s ease;
+}
+
+.difficulty-button:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+}
+
+/* Animation de progression */
+.progress-bar {
+  transition: width 0.5s ease-in-out;
+}
+
+/* Gradient animé pour la barre de progression */
+@keyframes gradient {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+.animated-gradient {
+  background: linear-gradient(-45deg, #a855f7, #ec4899, #f97316, #eab308);
+  background-size: 400% 400%;
+  animation: gradient 3s ease infinite;
+}
+
+/* Effet de pulsation pour les statistiques */
+@keyframes pulse-glow {
+  0%, 100% {
+    box-shadow: 0 0 10px rgba(168, 85, 247, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 20px rgba(168, 85, 247, 0.8);
+  }
+}
+
+.stat-card {
+  animation: pulse-glow 2s ease-in-out infinite;
+}
+
+/* Transitions fluides pour les changements de cartes */
+.card-transition {
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* Style pour les cartes inactives */
+.card-inactive {
+  opacity: 0.6;
+  transform: scale(0.95);
+}
+
+.card-active {
+  opacity: 1;
+  transform: scale(1);
+}
+
+/* Classes utilitaires pour l'espacement responsive des cartes */
+.card-grid-spacing {
+  gap: 1.5rem;
+}
+
+@media (min-width: 640px) {
+  .card-grid-spacing {
+    gap: 2rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .card-grid-spacing {
+    gap: 2.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-grid-spacing {
+    gap: 3rem;
+  }
+}
+
+@media (min-width: 1280px) {
+  .card-grid-spacing {
+    gap: 3.5rem;
+  }
+}
+
+.card-padding {
+  padding: 1rem;
+  margin: 0.5rem;
+}
+
+@media (min-width: 768px) {
+  .card-padding {
+    padding: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .card-padding {
+    padding: 2rem;
+  }
+}
+
+.improved-card-spacing {
+  margin: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.improved-card-spacing:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 25px rgba(168, 85, 247, 0.2);
+}
+
+/* Styles pour le flip des cartes flashcards */
+.transform-style-preserve-3d {
+  transform-style: preserve-3d;
+}
+
+.rotate-y-180 {
+  transform: rotateY(180deg);
+}
+
+.backface-hidden {
+  backface-visibility: hidden;
+}
+
+/* Perspective pour les cartes 3D */
+.perspective-1000 {
+  perspective: 1000px;
+}
+
+/* Styles pour le slider du PDF viewer */
+input[type="range"] {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 8px;
+  border-radius: 5px;
+  outline: none;
+  cursor: pointer;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2px solid #1e40af;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-webkit-slider-thumb:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+
+input[type="range"]::-moz-range-thumb {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: #3b82f6;
+  border: 2px solid #1e40af;
+  cursor: pointer;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  transition: all 0.2s ease;
+}
+
+input[type="range"]::-moz-range-thumb:hover {
+  background: #2563eb;
+  transform: scale(1.1);
+}
+
+/* Empêcher le zoom sur les canvas PDF */
+.pdf-canvas {
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  pointer-events: none;
+}
+
+/* Styles pour empêcher le zoom sur les conteneurs PDF */
+.pdf-container {
+  overflow: hidden;
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+.pdf-container::-webkit-scrollbar {
+  width: 8px;
+}
+
+.pdf-container::-webkit-scrollbar-track {
+  background: #374151;
+  border-radius: 4px;
+}
+
+.pdf-container::-webkit-scrollbar-thumb {
+  background: #6b7280;
+  border-radius: 4px;
+}
+
+.pdf-container::-webkit-scrollbar-thumb:hover {
+  background: #9ca3af;
+}

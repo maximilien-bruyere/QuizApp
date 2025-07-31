@@ -1,0 +1,79 @@
+{
+  "name": "quizapp",
+  "version": "1.0.0",
+  "main": "main.js",
+  "private": true,
+  "license": "Proprietary",
+  "author": {
+    "name": "Bruyère Maximilien",
+    "email": "maximilien-bruyere@hotmail.com"
+  },
+  "description": "Application QuizApp",
+  "type": "module",
+  "scripts": {
+    "start": "electron .",
+    "quizapp:install": "npm i && npm run frontend:install && npm run backend:install",
+    "frontend:install": "cd quizapp-frontend && npm i",
+    "backend:install": "cd quizapp-backend && npm i",
+    "quizapp:build": "npm run frontend:build && npm run backend:build && npm run electron:build",
+    "frontend:build": "cd quizapp-frontend && npm run build",
+    "backend:build": "cd quizapp-backend && npm run build",
+    "electron:build": "electron-builder",
+    "frontend:dev": "cd quizapp-frontend && npm run dev",
+    "backend:dev": "cd quizapp-backend && node "
+  },
+  "dependencies": {
+    "prisma": "^6.11.1",
+    "sqlite3": "^5.1.7",
+    "tsx": "^4.20.3"
+  },
+  "devDependencies": {
+    "@types/cacheable-request": "^6.0.3",
+    "@types/debug": "^4.1.12",
+    "@types/fs-extra": "^11.0.4",
+    "@types/http-cache-semantics": "^4.0.4",
+    "@types/keyv": "^3.1.4",
+    "@types/ms": "^2.1.0",
+    "@types/node": "^24.0.14",
+    "@types/responselike": "^1.0.3",
+    "@types/sqlite3": "^3.1.11",
+    "@types/yauzl": "^2.10.3",
+    "electron": "^37.2.1",
+    "electron-builder": "^26.0.12",
+    "esbuild": "^0.25.7",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.8.3"
+  },
+  "build": {
+    "files": [
+      "main.js",
+      "preload.js",
+      "quizapp-frontend/dist/**/*",
+      "quizapp-frontend/main.cjs"
+    ],
+    "extraResources": [
+      {
+        "from": "quizapp-node",
+        "to": "quizapp-node"
+      },
+      {
+        "from": "quizapp-backend",
+        "to": "quizapp-backend"
+      },
+      {
+        "from": "quizapp-backend/node_modules",
+        "to": "quizapp-backend/node_modules"
+      },
+      {
+        "from": "quizapp-backend/quizapp-database",
+        "to": "quizapp-backend/quizapp-database"
+      }
+    ],
+    "icon": "quizapp-logo/logo.png",
+    "win": {
+      "target": [
+        "nsis"
+      ]
+    }
+  }
+}

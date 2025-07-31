@@ -1,0 +1,159 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../node_modules/.prisma/client"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  user_id    Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String
+  name       String
+  created_at DateTime @default(now())
+  role       Role     @default(USER)
+
+  quizAttempts QuizAttempt[]
+  flashcards   Flashcard[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Difficulty {
+  FACILE
+  MOYEN
+  DIFFICILE
+}
+
+model Subject {
+  subject_id Int        @id @default(autoincrement())
+  name       String     @unique
+  quizzes    Quiz[]
+  categories Category[]
+}
+
+model Category {
+  category_id Int      @id @default(autoincrement())
+  name        String
+  subject_id  Int
+  subject     Subject  @relation(fields: [subject_id], references: [subject_id])
+  quizzes     Quiz[]
+  flashcards  Flashcard[]
+}
+
+model Quiz {
+  quiz_id     Int      @id @default(autoincrement())
+  title       String  
+  description String? 
+  difficulty  Difficulty? @default(MOYEN)
+  time_limit  Int?     // Limite de temps en minutes (optionnel)
+  is_exam_mode Boolean @default(false) // Mode examen
+  created_at  DateTime? @default(now())
+  updated_at  DateTime? @updatedAt
+  subject_id  Int
+  subject     Subject  @relation(fields: [subject_id], references: [subject_id])
+  category_id Int
+  category    Category @relation(fields: [category_id], references: [category_id])
+
+  questions    Question[]
+  quizAttempts QuizAttempt[]
+}
+
+model Question {
+  question_id Int     @id @default(autoincrement())
+  content     String 
+  type        String
+  quiz_id     Int
+  quiz        Quiz    @relation(fields: [quiz_id], references: [quiz_id])
+  image_url   String?
+  explanation String?
+
+  options Option[]
+  answers Answer[]
+  pairs   MatchingPair[] // <--- ajoute cette ligne
+}
+
+model Option {
+  option_id   Int      @id @default(autoincrement())
+  text        String  
+  is_correct  Boolean
+  question_id Int
+  question    Question @relation(fields: [question_id], references: [question_id])
+
+  answers Answer[]
+}
+
+model MatchingPair {
+  pair_id     Int      @id @default(autoincrement())
+  left        String  
+  right       String  
+  question_id Int
+  question    Question @relation(fields: [question_id], references: [question_id])
+}
+
+model QuizAttempt {
+  qa_id        Int      @id @default(autoincrement())
+  started_at   DateTime @default(now())
+  completed_at DateTime? // Date de fin du quiz
+  score        Int?     // Score final (nombre de bonnes réponses)
+  total_questions Int?  // Nombre total de questions
+  time_spent   Int?     // Temps passé en secondes
+  status       QuizStatus @default(IN_PROGRESS) // Statut du quiz
+
+  user_id Int
+  user    User @relation(fields: [user_id], references: [user_id])
+
+  quiz_id Int
+  quiz    Quiz @relation(fields: [quiz_id], references: [quiz_id])
+
+  answers Answer[]
+}
+
+enum QuizStatus {
+  IN_PROGRESS  // Quiz en cours
+  COMPLETED    // Quiz terminé
+  ABANDONED    // Quiz abandonné
+}
+
+model Answer {
+  answer_id     Int     @id @default(autoincrement())
+  response_text String?
+
+  option_id Int? // optionnel
+  option    Option? @relation(fields: [option_id], references: [option_id])
+
+  question_id Int
+  question    Question @relation(fields: [question_id], references: [question_id])
+
+  qa_id       Int
+  quizAttempt QuizAttempt @relation(fields: [qa_id], references: [qa_id])
+}
+
+model Flashcard {
+  flashcard_id Int      @id @default(autoincrement())
+  front        String   // Question/terme
+  back         String   // Réponse/définition
+  difficulty   FlashcardDifficulty @default(NOUVEAU) // Niveau de difficulté/maîtrise
+  created_at   DateTime @default(now())
+  updated_at   DateTime @updatedAt
+  
+  category_id Int
+  category    Category @relation(fields: [category_id], references: [category_id])
+  
+  user_id Int // Créateur de la flashcard
+  user    User @relation(fields: [user_id], references: [user_id])
+}
+
+enum FlashcardDifficulty {
+  NOUVEAU     // Nouvelle carte, pas encore étudiée
+  DIFFICILE   // Carte difficile, à revoir souvent
+  MOYEN       // Carte moyennement maîtrisée
+  FACILE      // Carte facile, bien maîtrisée
+  ACQUISE     // Carte parfaitement maîtrisée
+}

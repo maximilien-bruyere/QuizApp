@@ -1,0 +1,139 @@
+/* CSS personnalisé pour forcer la couleur blanche des formules KaTeX sur fond sombre */
+.katex {
+  color: white !important;
+}
+
+.katex .mord,
+.katex .mbin,
+.katex .mrel,
+.katex .mopen,
+.katex .mclose,
+.katex .mpunct,
+.katex .minner,
+.katex .mop,
+.katex .accent-body,
+.katex .frac-line,
+.katex .sqrt-line,
+.katex .delimsizing,
+.katex .delim-size1,
+.katex .delim-size2,
+.katex .delim-size3,
+.katex .delim-size4 {
+  color: white !important;
+}
+
+.katex .base {
+  color: white !important;
+}
+
+.katex .strut {
+  color: white !important;
+}
+
+.katex .vlist-t {
+  color: white !important;
+}
+
+.katex .vlist-r {
+  color: white !important;
+}
+
+.katex .vlist {
+  color: white !important;
+}
+
+.katex .sizing,
+.katex .fontsize-ensurer {
+  color: white !important;
+}
+
+.katex .reset-size1,
+.katex .reset-size2,
+.katex .reset-size3,
+.katex .reset-size4,
+.katex .reset-size5,
+.katex .reset-size6,
+.katex .reset-size7,
+.katex .reset-size8,
+.katex .reset-size9,
+.katex .reset-size10,
+.katex .reset-size11 {
+  color: white !important;
+}
+
+.katex .size1,
+.katex .size2,
+.katex .size3,
+.katex .size4,
+.katex .size5,
+.katex .size6,
+.katex .size7,
+.katex .size8,
+.katex .size9,
+.katex .size10,
+.katex .size11 {
+  color: white !important;
+}
+
+.katex * {
+  color: white !important;
+}
+
+/* Styles spécifiques pour les éléments mathématiques */
+.katex .mathdefault {
+  color: white !important;
+}
+
+.katex .mathit {
+  color: white !important;
+}
+
+.katex .mathrm {
+  color: white !important;
+}
+
+.katex .mathbf {
+  color: white !important;
+}
+
+.katex .mathsf {
+  color: white !important;
+}
+
+.katex .mathtt {
+  color: white !important;
+}
+
+/* Styles pour les fractions */
+.katex .frac-line::before {
+  border-bottom-color: white !important;
+}
+
+/* Styles pour les racines */
+.katex .sqrt-line::before {
+  border-bottom-color: white !important;
+}
+
+/* Styles pour les délimiteurs */
+.katex .delimsizing.mult .delim-size1 > span,
+.katex .delimsizing.mult .delim-size2 > span,
+.katex .delimsizing.mult .delim-size3 > span,
+.katex .delimsizing.mult .delim-size4 > span {
+  color: white !important;
+}
+
+/* Styles pour les accents */
+.katex .accent-body > span {
+  color: white !important;
+}
+
+/* Styles pour les matrices */
+.katex .arraycolsep {
+  color: white !important;
+}
+
+.katex .col-align-l,
+.katex .col-align-c,
+.katex .col-align-r {
+  color: white !important;
+}

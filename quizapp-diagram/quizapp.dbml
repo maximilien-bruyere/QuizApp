@@ -1,0 +1,101 @@
+Table User {
+  user_id integer [pk]
+  email text [unique]
+  password text
+  name text
+  created_at datetime
+  role text
+}
+
+Table Subject {
+  subject_id integer [pk]
+  name text [unique]
+}
+
+Table Category {
+  category_id integer [pk]
+  name text
+  subject_id integer
+}
+
+Table Quiz {
+  quiz_id integer [pk]
+  title text
+  description text
+  difficulty text
+  time_limit integer
+  is_exam_mode boolean
+  created_at datetime
+  updated_at datetime
+  subject_id integer
+  category_id integer
+}
+
+Table Question {
+  question_id integer [pk]
+  content text
+  type text
+  quiz_id integer
+  image_url text
+  explanation text
+}
+
+Table Option {
+  option_id integer [pk]
+  text text
+  is_correct boolean
+  question_id integer
+}
+
+Table MatchingPair {
+  pair_id integer [pk]
+  left text
+  right text
+  question_id integer
+}
+
+Table QuizAttempt {
+  qa_id integer [pk]
+  started_at datetime
+  completed_at datetime
+  score integer
+  total_questions integer
+  time_spent integer
+  status text
+  user_id integer
+  quiz_id integer
+}
+
+Table Answer {
+  answer_id integer [pk]
+  response_text text
+  option_id integer
+  question_id integer
+  qa_id integer
+}
+
+Table Flashcard {
+  flashcard_id integer [pk]
+  front text
+  back text
+  difficulty text
+  created_at datetime
+  updated_at datetime
+  category_id integer
+  user_id integer
+}
+
+// Relations
+Ref: Category.subject_id > Subject.subject_id
+Ref: Quiz.subject_id > Subject.subject_id
+Ref: Quiz.category_id > Category.category_id
+Ref: Question.quiz_id > Quiz.quiz_id
+Ref: Option.question_id > Question.question_id
+Ref: MatchingPair.question_id > Question.question_id
+Ref: QuizAttempt.user_id > User.user_id
+Ref: QuizAttempt.quiz_id > Quiz.quiz_id
+Ref: Answer.option_id > Option.option_id
+Ref: Answer.question_id > Question.question_id
+Ref: Answer.qa_id > QuizAttempt.qa_id
+Ref: Flashcard.category_id > Category.category_id
+Ref: Flashcard.user_id > User.user_id
