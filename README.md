@@ -37,9 +37,7 @@ quizapp/
 - **Base de données** : SQLite (dev), Prisma ORM
 - **Autres** : ESLint, Prettier, Jest, DBML
 
-## Installations
-
-### <ins>RELEASE</ins>
+## Installation
 
 Vous pouvez l'installer en appuyant [ici](https://github.com/maximilien-bruyere/QuizApp/releases/tag/latest)
 
