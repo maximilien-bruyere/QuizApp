@@ -31,6 +31,7 @@ quizapp/
 ```
 
 ## Technologies utilisées
+- **Intelligences articifielles** : Apprentissage des différentes notions ci-dessous
 - **Frontend** : React, Vite, TypeScript, Electron
 - **Backend** : NestJS, Prisma, TypeScript, Multer (upload)
 - **Base de données** : SQLite (dev), Prisma ORM
