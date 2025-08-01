@@ -43,7 +43,7 @@ Vous pouvez l'installer en appuyant [ici](https://github.com/maximilien-bruyere/
 
 ## Auteurs
 
-- [Bruyère Maximilien](https://github.com/maximilien-bruyere)
+[Bruyère Maximilien](https://github.com/maximilien-bruyere) - étudiant en informatique
 
 ## Licence
 
