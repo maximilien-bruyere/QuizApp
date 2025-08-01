@@ -148,90 +148,21 @@ export class QuizService {
       // Vérifier que le quiz existe
       await this.findOne(id);
 
-      // 1. Récupère les questions existantes en base
-      const existingQuestions = await this.prisma.question.findMany({
+      // Supprimer toutes les options liées aux questions du quiz
+      await this.prisma.option.deleteMany({
+        where: { question: { quiz_id: id } },
+      });
+      // Supprimer toutes les paires liées aux questions du quiz
+      await this.prisma.matchingPair.deleteMany({
+        where: { question: { quiz_id: id } },
+      });
+      // Supprimer toutes les questions du quiz
+      await this.prisma.question.deleteMany({
         where: { quiz_id: id },
-        select: { question_id: true },
       });
 
-      // 2. Liste des IDs envoyés par le frontend
-      const incomingIds = (data.questions ?? [])
-        .filter((q) => q.question_id)
-        .map((q) => q.question_id);
-
-      // 3. Questions à supprimer (présentes en base mais plus dans le payload)
-      const toDelete = existingQuestions
-        .filter((q) => !incomingIds.includes(q.question_id))
-        .map((q) => q.question_id);
-
-      // 4. Supprime les options, pairs puis les questions retirées
-      if (toDelete.length > 0) {
-        await this.prisma.option.deleteMany({
-          where: { question_id: { in: toDelete } },
-        });
-        await this.prisma.matchingPair.deleteMany({
-          where: { question_id: { in: toDelete } },
-        });
-        await this.prisma.question.deleteMany({
-          where: { question_id: { in: toDelete } },
-        });
-      }
-
-      // 5. Prépare la structure pour Prisma (upsert sur questions/options/pairs)
-      const questionsInput = data.questions
-        ? {
-            upsert: data.questions.map((q) => ({
-              where: { question_id: q.question_id ?? 0 },
-              update: {
-                content: q.content,
-                type: q.type,
-                image_url: q.image_url || null,
-                explanation: q.explanation || null,
-                options: {
-                  upsert: q.options.map((opt) => ({
-                    where: { option_id: opt.option_id ?? 0 },
-                    update: {
-                      text: opt.text,
-                      is_correct: opt.is_correct,
-                    },
-                    create: {
-                      text: opt.text,
-                      is_correct: opt.is_correct,
-                    },
-                  })),
-                },
-                pairs: {
-                  deleteMany: {}, // supprime toutes les anciennes paires
-                  create: (q.pairs ?? []).map((pair) => ({
-                    left: pair.left,
-                    right: pair.right,
-                  })),
-                },
-              },
-              create: {
-                content: q.content,
-                type: q.type,
-                image_url: q.image_url || null,
-                explanation: q.explanation || null,
-                options: {
-                  create: q.options.map((opt) => ({
-                    text: opt.text,
-                    is_correct: opt.is_correct,
-                  })),
-                },
-                pairs: {
-                  create: (q.pairs ?? []).map((pair) => ({
-                    left: pair.left,
-                    right: pair.right,
-                  })),
-                },
-              },
-            })),
-          }
-        : undefined;
-
-      // 6. Update du quiz
-      return await this.prisma.quiz.update({
+      // Mettre à jour les infos du quiz
+      await this.prisma.quiz.update({
         where: { quiz_id: id },
         data: {
           title: data.title,
@@ -241,17 +172,50 @@ export class QuizService {
           is_exam_mode: data.is_exam_mode,
           subject_id: data.subject_id,
           category_id: data.category_id,
-          ...(questionsInput && { questions: questionsInput }),
-        },
-        include: {
-          subject: true,
-          category: true,
-          questions: {
-            include: { options: true, pairs: true },
-            orderBy: { question_id: 'asc' },
-          },
         },
       });
+
+      // Recréer les questions/options/paires
+      if (data.questions && Array.isArray(data.questions)) {
+        for (const q of data.questions) {
+          const question = await this.prisma.question.create({
+            data: {
+              quiz_id: id,
+              content: q.content,
+              type: q.type,
+              image_url: q.image_url || null,
+              explanation: q.explanation || null,
+            },
+          });
+
+          if (q.options && (q.type === 'QCM' || q.type === 'QCU')) {
+            for (const opt of q.options) {
+              await this.prisma.option.create({
+                data: {
+                  question_id: question.question_id,
+                  text: opt.text,
+                  is_correct: opt.is_correct,
+                },
+              });
+            }
+          }
+
+          if (q.pairs && q.type === 'MATCHING') {
+            for (const pair of q.pairs) {
+              await this.prisma.matchingPair.create({
+                data: {
+                  question_id: question.question_id,
+                  left: pair.left,
+                  right: pair.right,
+                },
+              });
+            }
+          }
+        }
+      }
+
+      // Retourner le quiz mis à jour
+      return await this.findOne(id);
     } catch (error) {
       if (error instanceof NotFoundException) {
         throw error;
