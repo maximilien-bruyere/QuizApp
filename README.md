@@ -45,36 +45,38 @@ quizapp/
 > Il peut y avoir des bugs avec cette méthode.
 
 1. **Cloner le dépôt**
-   ```bash
-   git clone https://github.com/maximilien-bruyere/quizapp.git
-   cd quizapp
-   ```
+
+```bash
+git clone https://github.com/maximilien-bruyere/quizapp.git
+cd quizapp
+```
 
 2. **Installer les dépendances**
-   ```bash
-   npm run quizapp:install
-   npm run quizapp:build
-   ```
+
+```bash
+npm run quizapp:install
+npm run quizapp:build
+```
 
 3. **Utiliser l'application**
 
 L'application se trouvera dans le dossier QuizApp
-   ```bash
-   ./dist/win-unpacked/quizapp.exe
-   ```
+```bash
+./dist/win-unpacked/quizapp.exe
+```
 ou bien vous pouvez utiliser l'installateur qui se trouve dans le dossier QuizApp
-   ```bash
-   ./dist/quizapp Setup [x.x.x].exe
-   ```
+```bash
+./dist/quizapp Setup [x.x.x].exe
+```
 
 ### <ins>Deuxième méthode : utiliser l'installateur .exe (recommandé)</ins>
 
 1. **Télécharger l'installateur .exe**
 
 L'installateur se trouve dans le dossier GITHUB
-   ```bash
-   ./quizapp-installations
-   ```
+```bash
+./quizapp-installations/windows/quizapp-setup.exe
+```
 
 ## Auteurs
 
