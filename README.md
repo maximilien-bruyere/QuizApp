@@ -13,6 +13,7 @@ QuizApp est une application complète de gestion de quiz, conçue pour la créat
 - Importation/Exportation des données
 - Changement de langues
 - Classement pour les résultats des quiz
+- ...
   
 ## Structure du projet
 
@@ -24,9 +25,8 @@ quizapp/
 ├── README.md
 ├── tsconfig.json
 ├── quizapp-backend/            # Backend NestJS/Prisma
-├── quizapp-diagram/            # Diagrammes et documentation DB
 ├── quizapp-frontend/           # Frontend React/Electron
-├── quizapp-installations/      # Scripts d'installation
+├── quizapp-diagram/            # Diagrammes et documentation DB
 ├── quizapp-logo/               # Logos
 ```
 
