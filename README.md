@@ -37,43 +37,11 @@ quizapp/
 - **Base de données** : SQLite (dev), Prisma ORM
 - **Autres** : ESLint, Prettier, Jest, DBML
 
-## Installations (2 manières)
+## Installations
 
-### <ins>Première méthode - sans utiliser l'installateur .exe (non recommandé)</ins>
+### <ins>RELEASE</ins>
 
-> [!WARNING]
-> Il peut y avoir des bugs avec cette méthode.
-
-1. **Cloner le dépôt**
-
-```bash
-git clone https://github.com/maximilien-bruyere/quizapp.git
-cd quizapp
-```
-
-2. **Installer les dépendances**
-
-```bash
-npm run quizapp:install
-npm run quizapp:build
-```
-
-3. **Utiliser l'application**
-
-L'application se trouvera dans le dossier QuizApp
-```bash
-./dist/win-unpacked/quizapp.exe
-```
-ou bien vous pouvez utiliser l'installateur qui se trouve dans le dossier QuizApp
-```bash
-./dist/quizapp Setup [x.x.x].exe
-```
-
-### <ins>Deuxième méthode : utiliser l'installateur .exe (recommandé)</ins>
-
-1. **Télécharger l'installateur .exe**
-
-L'installateur se trouve dans la section RELEASE : `QuizApp 1.0.0 - Latest`
+Vous pouvez l'installer en appuyant [ici](https://github.com/maximilien-bruyere/QuizApp/releases/tag/latest)
 
 ## Auteurs
 
