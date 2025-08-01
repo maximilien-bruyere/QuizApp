@@ -73,10 +73,7 @@ ou bien vous pouvez utiliser l'installateur qui se trouve dans le dossier QuizAp
 
 1. **Télécharger l'installateur .exe**
 
-L'installateur se trouve dans le dossier GITHUB
-```bash
-./quizapp-installations/windows/quizapp-setup.exe
-```
+L'installateur se trouve dans la section RELEASE : `QuizApp 1.0.0 - Latest`
 
 ## Auteurs
 
