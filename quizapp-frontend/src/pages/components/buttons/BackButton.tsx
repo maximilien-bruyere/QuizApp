@@ -1,6 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { LogoutBackButton } from "./../buttons";
-
+import { useTranslation } from "react-i18next";
 /**
  * BackButton
  * -----------
@@ -16,15 +16,17 @@ import { LogoutBackButton } from "./../buttons";
 
 const BackButton = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   // Retourne un bouton qui, lorsqu'il est cliqué, navigue d'une page en arrière dans l'historique
   return (
     <LogoutBackButton
       onClick={() => navigate(-1)}
+      className="hover:cursor-pointer"
       size="md"
       icon="←"
     >
-      Retour
+      {t('study_flashcards_back')}
     </LogoutBackButton>
   );
 };

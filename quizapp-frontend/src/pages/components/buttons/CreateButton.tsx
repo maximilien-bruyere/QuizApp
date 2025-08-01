@@ -17,9 +17,9 @@ export default function CreateButton({
     group relative inline-flex items-center gap-2 font-medium rounded-xl text-white
     transform cursor-pointer
     transition-all duration-200 overflow-hidden
-    bg-gradient-to-r from-blue-600 to-blue-700
-    hover:from-blue-700 hover:to-blue-800
-    active:from-blue-800 active:to-blue-900
+      bg-blue-700 text-white
+      hover:bg-blue-800
+      active:bg-blue-900
   `;
 
   const sizes = {
@@ -36,8 +36,6 @@ export default function CreateButton({
       `}
       {...props}
     >
-      {/* Background overlay for hover effect */}
-      <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-200"></div>
       
       {icon && (
         <span className="relative z-10 text-lg">

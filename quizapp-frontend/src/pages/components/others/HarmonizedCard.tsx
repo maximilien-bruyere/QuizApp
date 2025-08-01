@@ -20,8 +20,6 @@ export const HarmonizedCard: React.FC<HarmonizedCardProps> = ({
         rounded-2xl
         shadow-lg shadow-purple-500/10
         transition-all duration-300
-        hover:shadow-xl hover:shadow-purple-500/20
-        hover:bg-gray-800/70
         ${className}
       `}
     >

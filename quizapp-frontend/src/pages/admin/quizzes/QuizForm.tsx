@@ -1,14 +1,8 @@
-
-import { useState, useEffect } from "react";
+import { useState, useEffect, ChangeEvent } from "react";
+import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router-dom";
 import { api } from "../../../api/api";
 import { Button } from "../../components/buttons";
-
-const QUESTION_TYPES = [
-  { value: "QCM", label: "QCM" },
-  { value: "QCU", label: "QCU" },
-  { value: "MATCHING", label: "Appariement" },
-];
 
 interface Option {
   option_id?: number;
@@ -20,7 +14,6 @@ interface Pair {
   right: string;
 }
 interface Question {
-  question_id?: number;
   content: string;
   type: string;
   image_url?: string;
@@ -31,73 +24,227 @@ interface Question {
 interface QuizFormData {
   title: string;
   description: string;
-  category_id: number | "";
-  time_limit: number | "";
+  difficulty: string;
+  time_limit: number;
   is_exam_mode: boolean;
+  subject_id: number | "";
+  category_id: number | "";
   questions: Question[];
 }
 interface Category {
   category_id: number;
   name: string;
-  subject: { name: string };
+  subject_id: number;
+}
+interface Subject {
+  subject_id: number;
+  name: string;
 }
 
-export default function QuizForm() {
-  const navigate = useNavigate();
-  const { id } = useParams<{ id: string }>();
-  const isEditing = Boolean(id);
+const QUESTION_TYPES = [
+  { value: "QCM", label: "QCM" },
+  { value: "QCU", label: "QCU" },
+  { value: "MATCHING", label: "Appariement" },
+];
 
+
+
+export default function QuizForm() {
+  const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { id } = useParams();
+  const isEditing = !!id;
+  const DIFFICULTY_LEVELS = [
+    { value: "FACILE", label: "🟢" + t("admin_quiz_form_page_easy") },
+    { value: "MOYEN", label: "🟡" + t("admin_quiz_form_page_medium") },
+    { value: "DIFFICILE", label: "🔴" + t("admin_quiz_form_page_hard") },
+  ];
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const [formData, setFormData] = useState<QuizFormData>({
     title: "",
     description: "",
-    category_id: "",
-    time_limit: "",
+    difficulty: "MOYEN",
+    time_limit: 30,
     is_exam_mode: false,
+    subject_id: "",
+    category_id: "",
     questions: [],
   });
-
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  // Pagination question courante
+  const [currentQuestionIdx, setCurrentQuestionIdx] = useState(0);
 
   useEffect(() => {
-    // Charger les catégories
+    api.get("/subjects").then((res) => setSubjects(res.data));
     api.get("/categories").then((res) => setCategories(res.data));
-
     if (isEditing && id) {
-      api
-        .get(`/quizzes/${id}`)
-        .then((res) => {
-          setFormData({
-            title: res.data.title,
-            description: res.data.description,
-            category_id: res.data.category_id,
-            time_limit: res.data.time_limit,
-            is_exam_mode: res.data.is_exam_mode ?? false,
-            questions: (res.data.questions || []).map((q: any) => ({
-              question_id: q.question_id,
-              content: q.content,
-              type: q.type,
-              image_url: q.image_url || "",
-              explanation: q.explanation || "",
-              options: (q.options || []).map((opt: any) => ({
-                option_id: opt.option_id,
-                text: opt.text,
-                is_correct: opt.is_correct,
-              })),
-              pairs: (q.pairs || []).map((p: any) => ({
-                left: p.left,
-                right: p.right,
-              })),
+      api.get(`/quizzes/${id}`).then((res) => {
+        setFormData({
+          title: res.data.title,
+          description: res.data.description,
+          difficulty: res.data.difficulty || "MOYEN",
+          time_limit: res.data.time_limit,
+          is_exam_mode: res.data.is_exam_mode,
+          subject_id: res.data.subject_id,
+          category_id: res.data.category_id,
+          questions: (res.data.questions || []).map((q: any) => ({
+            content: q.content,
+            type: q.type === "SINGLE" ? "QCU" : q.type === "MULTIPLE" ? "QCM" : q.type,
+            image_url: q.image_url || "",
+            explanation: q.explanation || "",
+            options: (q.options || []).map((opt: any) => ({
+              option_id: opt.option_id,
+              text: opt.text,
+              is_correct: opt.is_correct,
             })),
-          });
-        })
-        .catch((err) => {
-          console.error("Erreur chargement quiz :", err);
-          setError("Erreur lors du chargement du quiz");
+            pairs: (q.pairs || []).map((p: any) => ({
+              left: p.left,
+              right: p.right,
+            })),
+          })),
         });
+      });
     }
   }, [isEditing, id]);
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
+    const { name, value, type } = e.target;
+    let checked = false;
+    if (type === "checkbox") {
+      checked = (e.target as HTMLInputElement).checked;
+    }
+    setFormData((prev) => ({
+      ...prev,
+      [name]: type === "checkbox" ? checked : (name === "time_limit" ? Number(value) : value),
+    }));
+  };
+
+  const handleCategoryChange = (e: ChangeEvent<HTMLSelectElement>) => {
+    const catId = e.target.value === "" ? "" : Number(e.target.value);
+    const cat = categories.find((c) => c.category_id === catId);
+    setFormData((prev) => ({
+      ...prev,
+      category_id: catId,
+      subject_id: cat ? cat.subject_id : "",
+    }));
+  };
+
+  // Question Handlers
+  const handleAddQuestion = () => {
+    setFormData((prev) => {
+      const newQuestions = [
+        ...prev.questions,
+        {
+          content: "",
+          type: "QCM",
+          image_url: "",
+          explanation: "",
+          options: [{ text: "", is_correct: false }],
+          pairs: [],
+        },
+      ];
+      return {
+        ...prev,
+        questions: newQuestions,
+      };
+    });
+  };
+  const handleRemoveQuestion = (idx: number) => {
+    setFormData((prev) => {
+      const newQuestions = prev.questions.filter((_, i) => i !== idx);
+      let newCurrentIdx = currentQuestionIdx;
+      if (newQuestions.length === 0) newCurrentIdx = 0;
+      else if (newCurrentIdx >= newQuestions.length) newCurrentIdx = newQuestions.length - 1;
+      setCurrentQuestionIdx(newCurrentIdx);
+      return {
+        ...prev,
+        questions: newQuestions,
+      };
+    });
+  };
+  const handleQuestionChange = (qIdx: number, field: string, value: any) => {
+    setFormData((prev) => {
+      const questions = [...prev.questions];
+      questions[qIdx] = { ...questions[qIdx], [field]: value };
+      if (field === "type") {
+        questions[qIdx].options = [{ text: "", is_correct: false }];
+        questions[qIdx].pairs = [];
+      }
+      return { ...prev, questions };
+    });
+  };
+
+  // Option Handlers
+  const handleAddOption = (qIdx: number) => {
+    setFormData((prev) => {
+      const questions = [...prev.questions];
+      if (questions[qIdx].options.length < 6) {
+        questions[qIdx].options.push({ text: "", is_correct: false });
+      }
+      return { ...prev, questions };
+    });
+  };
+  const handleRemoveOption = (qIdx: number, oIdx: number) => {
+    setFormData((prev) => {
+      const questions = [...prev.questions];
+      if (questions[qIdx].options.length > 1) {
+        questions[qIdx].options = questions[qIdx].options.filter((_, i) => i !== oIdx);
+      }
+      return { ...prev, questions };
+    });
+  };
+  const handleOptionChange = (qIdx: number, oIdx: number, field: string, value: any) => {
+    setFormData((prev) => {
+      const questions = [...prev.questions];
+      const options = [...questions[qIdx].options];
+      options[oIdx] = { ...options[oIdx], [field]: value };
+      questions[qIdx].options = options;
+      return { ...prev, questions };
+    });
+  };
+
+  // Pair Handlers
+  const handleAddPair = (qIdx: number) => {
+    setFormData((prev) => {
+      const questions = [...prev.questions];
+      questions[qIdx].pairs.push({ left: "", right: "" });
+      return { ...prev, questions };
+    });
+  };
+  const handleRemovePair = (qIdx: number, pIdx: number) => {
+    setFormData((prev) => {
+      const questions = [...prev.questions];
+      questions[qIdx].pairs = questions[qIdx].pairs.filter((_, i) => i !== pIdx);
+      return { ...prev, questions };
+    });
+  };
+  const handlePairChange = (qIdx: number, pIdx: number, field: string, value: any) => {
+    setFormData((prev) => {
+      const questions = [...prev.questions];
+      const pairs = [...questions[qIdx].pairs];
+      pairs[pIdx] = { ...pairs[pIdx], [field]: value };
+      questions[qIdx].pairs = pairs;
+      return { ...prev, questions };
+    });
+  };
+
+  // Image upload
+  const handleImageUpload = async (qIdx: number, file: File) => {
+    const formDataImg = new FormData();
+    formDataImg.append("file", file);
+    try {
+      const res = await api.post("/upload/question-image", formDataImg, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (res.data?.url) {
+        handleQuestionChange(qIdx, "image_url", res.data.url);
+      }
+    } catch {
+      alert(t("admin_quiz_form_page_error_upload_image"));
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -121,127 +268,14 @@ export default function QuizForm() {
         await api.post("/quizzes", payload);
       }
       navigate("/admin/quizzes");
-    } catch (err: any) {
-      console.error("Erreur sauvegarde quiz :", err);
-      setError(err.response?.data?.message || "Erreur lors de la sauvegarde");
+    } catch (err) {
+      setError(t("admin_quiz_form_page_error_saving"));
     } finally {
       setLoading(false);
     }
   };
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) => {
-    const { name, value, type } = e.target;
-    let checked = false;
-    if (type === "checkbox") {
-      checked = (e.target as HTMLInputElement).checked;
-    }
-    setFormData(prev => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : (name === "category_id" || name === "time_limit" ? Number(value) : value)
-    }));
-  };
-
-  // Upload image pour une question
-  const handleImageUpload = async (qIdx: number, file: File) => {
-    const formDataImg = new FormData();
-    formDataImg.append("file", file);
-    try {
-      // Adapter l'URL selon ton backend
-      const res = await api.post("/upload/question-image", formDataImg, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
-      if (res.data?.url) {
-        handleQuestionChange(qIdx, "image_url", res.data.url);
-      }
-    } catch (err) {
-      alert("Erreur lors de l'upload de l'image");
-    }
-  };
-
-  // Gestion dynamique des questions
-  const handleQuestionChange = (idx: number, field: string, value: any) => {
-    setFormData((prev) => {
-      const questions = [...prev.questions];
-      questions[idx] = { ...questions[idx], [field]: value };
-      // Reset options/pairs si type change
-      if (field === "type") {
-        questions[idx].options = [];
-        questions[idx].pairs = [];
-      }
-      return { ...prev, questions };
-    });
-  };
-  const handleAddQuestion = () => {
-    setFormData((prev) => ({
-      ...prev,
-      questions: [
-        ...prev.questions,
-        { content: "", type: "QCM", options: [], pairs: [], image_url: "", explanation: "" },
-      ],
-    }));
-  };
-  const handleRemoveQuestion = (idx: number) => {
-    setFormData((prev) => ({
-      ...prev,
-      questions: prev.questions.filter((_, i) => i !== idx),
-    }));
-  };
-  // Gestion des options pour QCM/QCU
-  const handleOptionChange = (qIdx: number, oIdx: number, field: string, value: any) => {
-    setFormData((prev) => {
-      const questions = [...prev.questions];
-      const options = [...questions[qIdx].options];
-      options[oIdx] = { ...options[oIdx], [field]: value };
-      questions[qIdx].options = options;
-      return { ...prev, questions };
-    });
-  };
-  const handleAddOption = (qIdx: number) => {
-    setFormData((prev) => {
-      const questions = [...prev.questions];
-      questions[qIdx].options = [
-        ...questions[qIdx].options,
-        { text: "", is_correct: false },
-      ];
-      return { ...prev, questions };
-    });
-  };
-  const handleRemoveOption = (qIdx: number, oIdx: number) => {
-    setFormData((prev) => {
-      const questions = [...prev.questions];
-      questions[qIdx].options = questions[qIdx].options.filter((_, i) => i !== oIdx);
-      return { ...prev, questions };
-    });
-  };
-  // Gestion des paires pour appariement
-  const handlePairChange = (qIdx: number, pIdx: number, field: string, value: any) => {
-    setFormData((prev) => {
-      const questions = [...prev.questions];
-      const pairs = [...questions[qIdx].pairs];
-      pairs[pIdx] = { ...pairs[pIdx], [field]: value };
-      questions[qIdx].pairs = pairs;
-      return { ...prev, questions };
-    });
-  };
-  const handleAddPair = (qIdx: number) => {
-    setFormData((prev) => {
-      const questions = [...prev.questions];
-      questions[qIdx].pairs = [
-        ...questions[qIdx].pairs,
-        { left: "", right: "" },
-      ];
-      return { ...prev, questions };
-    });
-  };
-  const handleRemovePair = (qIdx: number, pIdx: number) => {
-    setFormData((prev) => {
-      const questions = [...prev.questions];
-      questions[qIdx].pairs = questions[qIdx].pairs.filter((_, i) => i !== pIdx);
-      return { ...prev, questions };
-    });
-  };
-
-  const selectedCategory = categories.find(c => c.category_id === formData.category_id);
+  const selectedCategory = categories.find((c) => c.category_id === formData.category_id);
 
   return (
     <div className="min-h-screen bg-gray-900 p-6">
@@ -253,10 +287,10 @@ export default function QuizForm() {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-white">
-              {isEditing ? "Modifier le quiz" : "Nouveau quiz"}
+              {isEditing ? t("admin_quiz_form_page_editing_quiz") : t("admin_quiz_form_page_new_quiz")}
             </h1>
             <p className="text-gray-400 mt-1">
-              {isEditing ? "Modifiez les informations du quiz" : "Créez un nouveau quiz"}
+              {isEditing ? t("admin_quiz_form_page_editing_quiz_description") : t("admin_quiz_form_page_new_quiz_description")}
             </p>
           </div>
         </div>
@@ -264,18 +298,16 @@ export default function QuizForm() {
         {/* Form Card */}
         <div className="relative overflow-hidden bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-8 shadow-xl">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full -mr-16 -mt-16"></div>
-          
           {error && (
             <div className="mb-6 p-4 bg-red-500/20 border border-red-500/30 rounded-xl text-red-400">
               {error}
             </div>
           )}
-
           <form onSubmit={handleSubmit} className="space-y-6">
             {/* Title Field */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Titre du quiz
+                {t("admin_quiz_form_page_title_label")}
               </label>
               <input
                 type="text"
@@ -284,50 +316,66 @@ export default function QuizForm() {
                 onChange={handleChange}
                 required
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-red-500/50 focus:bg-white/10 transition-all duration-200 outline-none"
-                placeholder="Ex: Quiz de Mathématiques - Niveau 1"
+                placeholder={t("admin_quiz_form_page_title_placeholder")}
               />
             </div>
-
             {/* Description Field */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Description
+                {t("admin_quiz_form_page_description_label")}
               </label>
               <textarea
                 name="description"
-                value={formData.description}
+                value={formData.description || ""}
                 onChange={handleChange}
                 rows={4}
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-red-500/50 focus:bg-white/10 transition-all duration-200 outline-none resize-none"
-                placeholder="Décrivez le contenu et les objectifs de ce quiz..."
+                placeholder={t("admin_quiz_form_page_description_placeholder")}
               />
             </div>
-
+            {/* Difficulty Field */}
+            <div>
+              <label className="block text-sm font-medium text-gray-300 mb-2">
+                {t("admin_quiz_form_page_difficulty_label")}
+              </label>
+              <select
+                name="difficulty"
+                value={formData.difficulty}
+                onChange={handleChange}
+                className="hover:cursor-pointer w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-red-500/50 focus:bg-white/10 transition-all duration-200 outline-none"
+              >
+                {DIFFICULTY_LEVELS.map((d) => (
+                  <option className="bg-gray-800" key={d.value} value={d.value}>{d.label}</option>
+                ))}
+              </select>
+            </div>
             {/* Category Field */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Catégorie
+                {t("admin_quiz_form_page_category_label")}
               </label>
               <select
                 name="category_id"
                 value={formData.category_id}
-                onChange={handleChange}
+                onChange={handleCategoryChange}
                 required
-                className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-red-500/50 focus:bg-white/10 transition-all duration-200 outline-none"
+                className="hover:cursor-pointer w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white focus:border-red-500/50 focus:bg-white/10 transition-all duration-200 outline-none"
               >
-                <option value="" className="bg-gray-800">Sélectionnez une catégorie</option>
-                {categories.map(category => (
-                  <option key={category.category_id} value={category.category_id} className="bg-gray-800">
-                    {category.name} ({category.subject.name})
-                  </option>
-                ))}
+                <option value="" className="bg-gray-800">{t("admin_quiz_form_page_category_placeholder")}</option>
+                {categories.map(category => {
+                  const subject = subjects.find(s => s.subject_id === category.subject_id);
+                  return (
+                    <option key={category.category_id} value={category.category_id} className="bg-gray-800">
+                      {subject ? `${subject.name} - ${category.name}` : category.name}
+                    </option>
+                  );
+                })}
               </select>
             </div>
-
             {/* Time Limit Field */}
             <div>
               <label className="block text-sm font-medium text-gray-300 mb-2">
-                Temps limite (minutes)
+                {t("admin_quiz_form_page_time_limit_label")}
               </label>
               <input
                 type="number"
@@ -337,7 +385,7 @@ export default function QuizForm() {
                 min="1"
                 max="180"
                 className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-gray-500 focus:border-red-500/50 focus:bg-white/10 transition-all duration-200 outline-none"
-                placeholder="Ex: 30"
+                placeholder={t("admin_quiz_form_page_time_limit_placeholder")}
               />
             </div>
             {/* Mode examen */}
@@ -351,155 +399,224 @@ export default function QuizForm() {
                 className="h-5 w-5 text-red-500 focus:ring-red-500 border-gray-300 rounded"
               />
               <label htmlFor="is_exam_mode" className="text-gray-300 select-none cursor-pointer">
-                Mode examen (aucune correction ni score affiché à la fin)
+                {t("admin_quiz_form_page_exam_mode_label")}
               </label>
             </div>
-
-            {/* Questions dynamiques */}
+            {/* Questions dynamiques avec pagination */}
             <div className="mt-8">
-              <div className="flex items-center justify-between mb-2">
-                <h2 className="text-lg font-bold text-white">Questions</h2>
-                <Button type="button" variant="primary" onClick={handleAddQuestion}>
-                  + Ajouter une question
+              <div className="flex items-center gap-4 mb-4">
+                <h2 className="text-lg font-bold text-white flex-1">{t("admin_quiz_form_page_questions_title")}</h2>
+                <Button
+                  type="button"
+                  variant="primary"
+                  onClick={handleAddQuestion}
+                  className="!px-4 !py-2 !rounded-lg !text-base !font-semibold"
+                >
+                  {t("admin_quiz_form_page_add_question_button")}
                 </Button>
               </div>
               {formData.questions.length === 0 && (
-                <div className="text-gray-400 text-sm mb-4">Aucune question ajoutée.</div>
+                <div className="text-gray-400 text-sm mb-4">{t("admin_quiz_form_page_no_questions")}</div>
               )}
-              {formData.questions.map((q, qIdx) => (
-                <div key={qIdx} className="mb-8 p-4 rounded-xl bg-white/10 border border-white/20">
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-white font-semibold">Question {qIdx + 1}</span>
-                    <Button type="button" variant="danger" onClick={() => handleRemoveQuestion(qIdx)} size="sm">
-                      Supprimer
+              {formData.questions.length > 0 && (
+                <>
+                  {/* Pagination */}
+                  <div className="flex justify-around gap-2 mb-4 mt-8">
+                    <div className="flex items-center justify-center gap-2">
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setCurrentQuestionIdx((idx) => Math.max(0, idx - 1))}
+                      disabled={currentQuestionIdx === 0}
+                    >
+                      {t("admin_quiz_form_page_previous_button")}
                     </Button>
-                  </div>
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Type</label>
-                      <select
-                        value={q.type}
-                        onChange={e => handleQuestionChange(qIdx, "type", e.target.value)}
-                        className="w-full px-3 py-2 rounded bg-white/5 border border-white/10 text-white"
-                      >
-                        {QUESTION_TYPES.map(t => (
-                          <option key={t.value} value={t.value}>{t.label}</option>
-                        ))}
-                      </select>
+                    <p>/</p>
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => setCurrentQuestionIdx((idx) => Math.min(formData.questions.length - 1, idx + 1))}
+                      disabled={currentQuestionIdx === formData.questions.length - 1}
+                    >
+                      {t("admin_quiz_form_page_next_button")}
+                    </Button>
                     </div>
-                    <div>
-                      <label className="block text-sm font-medium text-gray-300 mb-1">Contenu</label>
-                      <input
-                        type="text"
-                        value={q.content}
-                        onChange={e => handleQuestionChange(qIdx, "content", e.target.value)}
-                        className="w-full px-3 py-2 rounded bg-white/5 border border-white/10 text-white"
-                        placeholder="Intitulé de la question"
-                      />
+                     <div className="flex items-center justify-center gap-2">
+                    <span className="text-gray-300 text-sm">{t("admin_quiz_form_page_current_question_label")}</span>
+                    <input
+                      type="number"
+                      min={1}
+                      max={formData.questions.length}
+                      value={currentQuestionIdx + 1}
+                      onChange={e => {
+                        let val = Number(e.target.value);
+                        if (isNaN(val) || val < 1) val = 1;
+                        if (val > formData.questions.length) val = formData.questions.length;
+                        setCurrentQuestionIdx(val - 1);
+                      }}
+                      className="w-14 px-2 py-1 rounded bg-white/10 border border-white/20 text-white text-center mx-1"
+                    />
+                    <span className="text-gray-300 text-sm">/ {formData.questions.length}</span>
                     </div>
                   </div>
-                  {/* QCM/QCU: options */}
-                  {(q.type === "QCM" || q.type === "QCU") && (
-                    <div className="mt-4">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-gray-300 font-semibold">Options</span>
-                        <Button type="button" variant="primary" onClick={() => handleAddOption(qIdx)} size="sm">
-                          + Ajouter une option
-                        </Button>
-                      </div>
-                      {q.options.length === 0 && <div className="text-gray-400 text-xs mb-2">Aucune option.</div>}
-                      {q.options.map((opt, oIdx) => (
-                        <div key={oIdx} className="flex items-center gap-2 mb-2">
+                  {/* Affichage d'une seule question */}
+                  {(() => {
+                    const qIdx = currentQuestionIdx;
+                    const q = formData.questions[qIdx];
+                    return (
+                      <div key={qIdx} className="p-6 rounded-2xl bg-white/5 border border-white/10 shadow-lg relative">
+                        {/* Titre + bouton supprimer */}
+                        <div className="flex items-center justify-between mb-4">
                           <input
                             type="text"
-                            value={opt.text}
-                            onChange={e => handleOptionChange(qIdx, oIdx, "text", e.target.value)}
-                            className="flex-1 px-2 py-1 rounded bg-white/10 border border-white/20 text-white"
-                            placeholder={`Option ${oIdx + 1}`}
+                            value={q.content}
+                            onChange={e => handleQuestionChange(qIdx, "content", e.target.value)}
+                            className="w-full px-3 py-2 mr-4 bg-white/5 border border-white/10 rounded text-white focus:border-red-500/50 focus:bg-white/10 transition-all duration-200 outline-none"
+                            placeholder={`Intitulé de la question #${qIdx + 1}`}
                           />
-                          <label className="flex items-center gap-1 text-xs text-gray-300">
+                          <Button type="button" variant="danger" onClick={() => handleRemoveQuestion(qIdx)} size="sm" className="">
+                            Supprimer
+                          </Button>
+                        </div>
+                        {/* Type */}
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
+                          <div>
+                            <label className="block text-xs font-medium text-gray-400 mb-1">Type de question</label>
+                            <select
+                              value={q.type}
+                              onChange={e => handleQuestionChange(qIdx, "type", e.target.value)}
+                              className="hover:cursor-pointer w-full px-3 py-2 rounded bg-white/5 border border-white/10 text-white"
+                            >
+                              {QUESTION_TYPES.map(t => (
+                                <option className="bg-gray-800" key={t.value} value={t.value}>{t.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                        {/* Image upload */}
+                        <div className="mb-4">
+                          <label className="block text-xs text-gray-400 mb-1">Image (optionnel)</label>
+                          <div className="flex items-center gap-4">
                             <input
-                              type={q.type === "QCM" ? "checkbox" : "radio"}
-                              checked={!!opt.is_correct}
-                              onChange={e => handleOptionChange(qIdx, oIdx, "is_correct", q.type === "QCM" ? e.target.checked : true)}
-                              name={`correct-${qIdx}`}
+                              type="file"
+                              accept="image/*"
+                              onChange={e => {
+                                if (e.target.files && e.target.files[0]) {
+                                  handleImageUpload(qIdx, e.target.files[0]);
+                                }
+                              }}
+                              className="w-full px-2 py-1 rounded bg-white/5 border border-white/10 text-white hover:cursor-pointer "
                             />
-                            Correcte
-                          </label>
-                          <Button type="button" variant="danger" onClick={() => handleRemoveOption(qIdx, oIdx)} size="sm">
-                            Supprimer
-                          </Button>
+                          </div>
                         </div>
-                      ))}
-                    </div>
-                  )}
-                  {/* Appariement: paires */}
-                  {q.type === "MATCHING" && (
-                    <div className="mt-4">
-                      <div className="flex items-center justify-between mb-1">
-                        <span className="text-sm text-gray-300 font-semibold">Paires</span>
-                        <Button type="button" variant="primary" onClick={() => handleAddPair(qIdx)} size="sm">
-                          + Ajouter une paire
-                        </Button>
+                        {q.image_url && (
+                          <img src={`http://localhost:3000${q.image_url}`} alt="aperçu" className="max-h-16 rounded border border-white/20 mb-4" />
+                        )}
+                        {/* Ajouter option/paires */}
+                        <div className="flex items-center justify-between mb-2">
+                          {(q.type === "QCM" || q.type === "QCU") && (
+                            <>
+                              <span className="text-sm text-gray-300 font-semibold">Options</span>
+                              <Button
+                                type="button"
+                                variant="primary"
+                                onClick={() => handleAddOption(qIdx)}
+                                size="sm"
+                                disabled={q.options.length >= 6}
+                              >
+                                + Ajouter une option
+                              </Button>
+                            </>
+                          )}
+                          {q.type === "MATCHING" && (
+                            <>
+                              <span className="text-sm text-gray-300 font-semibold">Paires</span>
+                              <Button
+                                type="button"
+                                variant="primary"
+                                onClick={() => handleAddPair(qIdx)}
+                                size="sm"
+                              >
+                                + Ajouter une paire
+                              </Button>
+                            </>
+                          )}
+                        </div>
+                        {/* Options ou paires */}
+                        {(q.type === "QCM" || q.type === "QCU") && (
+                          <div className="grid grid-cols-1 gap-2 mb-2">
+                            {q.options.map((opt, oIdx) => (
+                              <div key={oIdx} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 transition-shadow focus-within:shadow-lg">
+                                <span className="text-xs text-gray-400">{String.fromCharCode(65 + oIdx)}</span>
+                                <input
+                                  type="text"
+                                  value={opt.text}
+                                  onChange={e => handleOptionChange(qIdx, oIdx, "text", e.target.value)}
+                                  className="flex-1 px-2 py-1 rounded bg-white/10 border border-white/20 text-white focus:border-red-500/50 focus:bg-white/10 transition-all duration-200 outline-none"
+                                  placeholder={`Option ${oIdx + 1}`}
+                                />
+                                <label className="flex items-center gap-1 text-xs text-gray-300">
+                                  <input
+                                    type={q.type === "QCM" ? "checkbox" : "radio"}
+                                    checked={!!opt.is_correct}
+                                    onChange={e => handleOptionChange(qIdx, oIdx, "is_correct", q.type === "QCM" ? e.target.checked : true)}
+                                    name={`correct-${qIdx}`}
+                                  />
+                                  <span className="hidden md:inline">Correcte</span>
+                                </label>
+                                <Button type="button" variant="danger" onClick={() => handleRemoveOption(qIdx, oIdx)} size="sm" disabled={q.options.length <= 1}>
+                                  <span className="sr-only">Supprimer</span>
+                                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {q.type === "MATCHING" && (
+                          <div className="space-y-2 mb-2">
+                            {q.pairs.map((pair, pIdx) => (
+                              <div key={pIdx} className="flex items-center gap-2 bg-white/10 border border-white/20 rounded-lg px-2 py-1">
+                                <input
+                                  type="text"
+                                  value={pair.left}
+                                  onChange={e => handlePairChange(qIdx, pIdx, "left", e.target.value)}
+                                  className="flex-1 px-2 py-1 rounded bg-white/20 border border-white/30 text-white"
+                                  placeholder="Gauche"
+                                />
+                                <span className="text-gray-400">↔</span>
+                                <input
+                                  type="text"
+                                  value={pair.right}
+                                  onChange={e => handlePairChange(qIdx, pIdx, "right", e.target.value)}
+                                  className="flex-1 px-2 py-1 rounded bg-white/20 border border-white/30 text-white"
+                                  placeholder="Droite"
+                                />
+                                <Button type="button" variant="danger" onClick={() => handleRemovePair(qIdx, pIdx)} size="sm">
+                                  Supprimer
+                                </Button>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        {/* Explication */}
+                        <div className="mt-4">
+                          <label className="block text-xs text-gray-400 mb-1">Explication (optionnel)</label>
+                          <textarea
+                            value={q.explanation || ""}
+                            onChange={e => handleQuestionChange(qIdx, "explanation", e.target.value)}
+                            rows={3}
+                            className="w-full px-2 py-3 rounded bg-white/5 border border-white/10 text-white focus:border-red-500/50 focus:bg-white/10 transition-all duration-200 outline-none resize-y"
+                            placeholder="Explication affichée après la correction"
+                          />
+                        </div>
                       </div>
-                      {q.pairs.length === 0 && <div className="text-gray-400 text-xs mb-2">Aucune paire.</div>}
-                      {q.pairs.map((pair, pIdx) => (
-                        <div key={pIdx} className="flex items-center gap-2 mb-2">
-                          <input
-                            type="text"
-                            value={pair.left}
-                            onChange={e => handlePairChange(qIdx, pIdx, "left", e.target.value)}
-                            className="flex-1 px-2 py-1 rounded bg-white/10 border border-white/20 text-white"
-                            placeholder="Gauche"
-                          />
-                          <span className="text-gray-400">↔</span>
-                          <input
-                            type="text"
-                            value={pair.right}
-                            onChange={e => handlePairChange(qIdx, pIdx, "right", e.target.value)}
-                            className="flex-1 px-2 py-1 rounded bg-white/10 border border-white/20 text-white"
-                            placeholder="Droite"
-                          />
-                          <Button type="button" variant="danger" onClick={() => handleRemovePair(qIdx, pIdx)} size="sm">
-                            Supprimer
-                          </Button>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  {/* Explication et image */}
-                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                    <div>
-                      <label className="block text-xs text-gray-400 mb-1">Explication (optionnel)</label>
-                      <input
-                        type="text"
-                        value={q.explanation || ""}
-                        onChange={e => handleQuestionChange(qIdx, "explanation", e.target.value)}
-                        className="w-full px-2 py-1 rounded bg-white/10 border border-white/20 text-white"
-                        placeholder="Explication affichée après la correction"
-                      />
-                    </div>
-                    <div>
-                      <label className="block text-xs text-gray-400 mb-1">Image (optionnel)</label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={e => {
-                          if (e.target.files && e.target.files[0]) {
-                            handleImageUpload(qIdx, e.target.files[0]);
-                          }
-                        }}
-                        className="w-full px-2 py-1 rounded bg-white/10 border border-white/20 text-white"
-                      />
-                      {q.image_url && (
-                        <img src={q.image_url} alt="aperçu" className="mt-2 max-h-32 rounded border border-white/20" />
-                      )}
-                    </div>
-                  </div>
-                </div>
-              ))}
+                    );
+                  })()}
+                </>
+              )}
             </div>
-
             {/* Actions */}
             <div className="flex gap-4 pt-4">
               <Button
@@ -509,7 +626,7 @@ export default function QuizForm() {
                 disabled={loading}
                 className="flex-1"
               >
-                Retour
+                {t("admin_quiz_form_page_back_button")}
               </Button>
               <Button
                 type="submit"
@@ -517,54 +634,50 @@ export default function QuizForm() {
                 disabled={loading}
                 className="flex-1"
               >
-                {loading ? "Sauvegarde..." : isEditing ? "Modifier" : "Créer"}
+                {loading ? t("admin_quiz_form_page_saving") : isEditing ? t("admin_quiz_form_page_update_button") : t("admin_quiz_form_page_create_button")}
               </Button>
             </div>
           </form>
         </div>
-
         {/* Preview Card */}
         <div className="mt-8 relative overflow-hidden bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 shadow-xl">
           <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-red-500/5 to-rose-500/5 rounded-full -mr-16 -mt-16"></div>
-          <h3 className="text-xl font-bold text-white mb-4">Aperçu</h3>
+          <h3 className="text-xl font-bold text-white mb-4">{t("admin_quiz_form_page_preview_title")}</h3>
           <div className="space-y-3">
             <div className="flex items-center gap-3">
               <span className="text-gray-400">❓</span>
               <span className="text-white font-medium">
-                {formData.title || "Titre du quiz"}
+                {formData.title || t("admin_quiz_form_page_title_label")}
               </span>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-gray-400">📝</span>
               <span className="text-gray-300">
-                {formData.description || "Description du quiz"}
+                {formData.description || t("admin_quiz_form_page_description_label")}
               </span>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-gray-400">📂</span>
               <span className="text-gray-300">
-                {selectedCategory?.name || "Catégorie"}
-                {selectedCategory && (
-                  <span className="text-gray-500 ml-2">({selectedCategory.subject.name})</span>
-                )}
+                {selectedCategory ? `${subjects.find(s => s.subject_id === selectedCategory.subject_id)?.name || ''} - ${selectedCategory.name}` : t("admin_quiz_form_page_category_label")}
               </span>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-gray-400">⏱️</span>
               <span className="text-gray-300">
-                {formData.time_limit ? `${formData.time_limit} minutes` : "Temps limite"}
+                {formData.time_limit ? `${formData.time_limit} ${t("admin_quiz_form_page_minutes")}` : t("admin_quiz_form_page_time_limit_label")}
               </span>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-gray-400">🧪</span>
               <span className="text-gray-300">
-                {formData.is_exam_mode ? "Mode examen activé" : "Mode examen désactivé"}
+                {formData.is_exam_mode ? t("admin_quiz_form_page_exam_mode_enabled") : t("admin_quiz_form_page_exam_mode_disabled")}
               </span>
             </div>
             <div className="flex items-center gap-3">
               <span className="text-gray-400">📋</span>
               <span className="text-gray-300">
-                {formData.questions.length} question{formData.questions.length > 1 ? "s" : ""}
+                {formData.questions.length} {formData.questions.length > 1 ? t("admin_quiz_form_page_questions_label_plural") : t("admin_quiz_form_page_questions_label_singular")}
               </span>
             </div>
           </div>

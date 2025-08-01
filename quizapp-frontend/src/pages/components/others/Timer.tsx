@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface TimerProps {
   timeLeft: number;
@@ -8,6 +9,7 @@ interface TimerProps {
 }
 
 const Timer: React.FC<TimerProps> = ({ timeLeft, totalTime, isActive }) => {
+  const { t } = useTranslation();
   const formatTime = (seconds: number): string => {
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
@@ -105,15 +107,15 @@ const Timer: React.FC<TimerProps> = ({ timeLeft, totalTime, isActive }) => {
       {timeLeft <= 60 && timeLeft > 0 && (
         <div className="text-center">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-red-900/50 text-red-300 border border-red-500/30 animate-pulse">
-            ⚠️ Dernière minute !
+            {t('timer_alert_1min')}
           </span>
         </div>
       )}
-      
+
       {timeLeft <= 300 && timeLeft > 60 && (
         <div className="text-center">
           <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium bg-orange-900/50 text-orange-300 border border-orange-500/30">
-            🕐 Moins de 5 minutes
+            {t('timer_alert_5min')}
           </span>
         </div>
       )}

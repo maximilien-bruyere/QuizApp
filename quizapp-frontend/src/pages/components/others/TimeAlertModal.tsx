@@ -1,4 +1,5 @@
 import React from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface TimeAlertModalProps {
   show: boolean;
@@ -7,6 +8,7 @@ interface TimeAlertModalProps {
 }
 
 const TimeAlertModal: React.FC<TimeAlertModalProps> = ({ show, timeLeft, onClose }) => {
+  const { t } = useTranslation();
   if (!show) return null;
 
   const formatTime = (seconds: number): string => {
@@ -33,13 +35,13 @@ const TimeAlertModal: React.FC<TimeAlertModalProps> = ({ show, timeLeft, onClose
           <h3 className={`text-xl font-bold mb-4 ${
             isLastMinute ? 'text-red-400' : 'text-orange-400'
           }`}>
-            {isLastMinute ? 'Dernière minute !' : 'Attention !'}
+            {isLastMinute ? t('time_alert_modal_last_minute_title') : t('time_alert_modal_attention_title')}
           </h3>
-          
+
           <p className="text-gray-300 mb-6">
             {isLastMinute 
-              ? 'Il vous reste moins d\'une minute pour terminer le quiz !'
-              : 'Il vous reste moins de 5 minutes pour terminer le quiz.'
+              ? t('time_alert_modal_last_minute_message')
+              : t('time_alert_modal_5min_message')
             }
           </p>
           
@@ -59,7 +61,7 @@ const TimeAlertModal: React.FC<TimeAlertModalProps> = ({ show, timeLeft, onClose
                 : 'bg-orange-600 hover:bg-orange-700 text-white'
             }`}
           >
-            Continuer le quiz
+            {t('time_alert_modal_continue_button')}
           </button>
         </div>
       </div>

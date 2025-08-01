@@ -23,7 +23,7 @@ export default function Button({
   ...props
 }: ButtonProps) {
   const baseClasses = `
-    relative inline-flex items-center justify-center gap-2 font-medium rounded-xl
+    relative inline-flex items-center justify-center gap-2 font-medium rounded-md 
     transition-all duration-300 ease-out transform cursor-pointer
     disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none
     overflow-hidden group
@@ -32,9 +32,9 @@ export default function Button({
 
   const variants = {
     primary: `
-      bg-gradient-to-r from-blue-600 to-blue-700 text-white
-      hover:from-blue-700 hover:to-blue-800
-      active:from-blue-800 active:to-blue-900
+      bg-blue-700 text-white
+      hover:bg-blue-800
+      active:bg-blue-900
     `,
     secondary: `
       bg-gray-600 text-white
@@ -42,9 +42,9 @@ export default function Button({
       active:bg-gray-400
     `,
     danger: `
-      bg-gradient-to-r from-red-700 to-red-800 text-white
-      hover:from-red-800 hover:to-red-900
-      active:from-red-900 active:to-red-950
+      bg-red-700 text-white
+      hover:bg-red-800
+      active:bg-red-900
     `,
     ghost: `
       bg-transparent text-gray-300 border border-gray-600
@@ -52,9 +52,9 @@ export default function Button({
       active:bg-gray-700 active:border-gray-400
     `,
     modification: `
-      bg-gradient-to-r from-purple-600 to-purple-700 text-white
-      hover:from-purple-700 hover:to-purple-800
-      active:from-purple-800 active:to-purple-900
+      bg-purple-700 text-white
+      hover:bg-purple-800
+      active:bg-purple-900
     `,
     logout: `
       bg-gradient-to-r from-red-700 to-red-800 text-white
@@ -76,6 +76,7 @@ export default function Button({
 
   return (
     <button
+      type={props.type || "button"}
       className={`
         ${baseClasses}
         ${variants[variant]}
@@ -86,7 +87,7 @@ export default function Button({
       {...props}
     >
       {/* Background overlay for hover effect */}
-      <div className="absolute inset-0 bg-white opacity-0 group-hover:opacity-20 rounded-xl transition-opacity duration-200"></div>
+      <div className="absolute inset-0 bg-white opacity-0 rounded-xl transition-opacity duration-200"></div>
       
       {/* Loading spinner */}
       {isLoading && (

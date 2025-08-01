@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTranslation } from 'react-i18next';
 
 interface UseTimerAlertsProps {
   timeLeft: number;
@@ -10,8 +11,8 @@ interface TimerAlertsReturn {
   showAlert: boolean;
   closeAlert: () => void;
 }
-
 export const useTimerAlerts = ({ timeLeft, isActive, onTimeUp }: UseTimerAlertsProps): TimerAlertsReturn => {
+  const { t } = useTranslation();
   const lastTimeLeftRef = useRef(timeLeft);
   const hasPlayedWarningRef = useRef(false);
   const hasPlayedFinalWarningRef = useRef(false);
@@ -24,14 +25,14 @@ export const useTimerAlerts = ({ timeLeft, isActive, onTimeUp }: UseTimerAlertsP
     if (timeLeft <= 300 && timeLeft > 299 && !hasPlayedWarningRef.current) {
       hasPlayedWarningRef.current = true;
       setShowAlert(true);
-      console.log('⚠️ Plus que 5 minutes !');
+      console.log(t('timer_alert_5min'));
     }
 
     // Alerte à 1 minute
     if (timeLeft <= 60 && timeLeft > 59 && !hasPlayedFinalWarningRef.current) {
       hasPlayedFinalWarningRef.current = true;
       setShowAlert(true);
-      console.log('🚨 Plus qu\'une minute !');
+      console.log(t('timer_alert_1min'));
     }
 
     // Temps écoulé

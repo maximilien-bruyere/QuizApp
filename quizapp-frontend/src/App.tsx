@@ -1,6 +1,7 @@
 import { Routes, Route } from "react-router-dom";
-import { Suspense, lazy } from "react";
 import i18n from "./i18n";
+import { I18nextProvider } from "react-i18next";
+import { Suspense, lazy } from "react";
 
 // Components essentiels (chargés immédiatement)
 import Header from "./pages/components/header/Header";
@@ -63,9 +64,8 @@ const LoadingSpinner = () => (
 );
 
 function App() {
-  i18n.changeLanguage("jap");
   return (
-    
+    <I18nextProvider i18n={i18n}>
       <div className=" bg-[#090b10] flex flex-col min-h-screen">
         <Header />
         <main className="flex-grow">
@@ -123,6 +123,7 @@ function App() {
         </main>
         <Footer />
       </div>
+    </I18nextProvider>
   );
 }
 

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useTranslation } from "react-i18next";
 import { useParams, useNavigate } from "react-router-dom";
 import { api } from "../../api/api";
 import { Button } from "../components/buttons";
@@ -26,6 +27,7 @@ interface Quiz {
 }
 
 const QuizPreview = () => {
+  const { t } = useTranslation();
   const { id } = useParams();
   const navigate = useNavigate();
   const [quiz, setQuiz] = useState<Quiz | null>(null);
@@ -45,7 +47,7 @@ const QuizPreview = () => {
           setActualQuestionsCount(response.data.questions_count || 0);
         }
       } catch (error) {
-        console.error('Erreur lors du chargement du quiz:', error);
+        console.error(t('quiz_preview_error_loading'), error);
       } finally {
         setLoading(false);
       }
@@ -64,7 +66,7 @@ const QuizPreview = () => {
   };
 
   const formatTimeLimit = (minutes: number) => {
-    if (!minutes || minutes <= 0) return 'Pas de limite';
+    if (!minutes || minutes <= 0) return t('quiz_preview_no_time_limit');
     if (minutes < 60) return `${minutes}min`;
     const hours = Math.floor(minutes / 60);
     const remainingMinutes = minutes % 60;
@@ -72,7 +74,7 @@ const QuizPreview = () => {
   };
 
   if (loading) return <LoadingSpinner />;
-  if (!quiz) return <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center"><p>Quiz non trouvé</p></div>;
+  if (!quiz) return <div className="min-h-screen bg-gray-900 text-white flex items-center justify-center"><p>{t('quiz_preview_not_found')}</p></div>;
 
   return (
     <div className="min-h-screen bg-gray-900 text-white">
@@ -89,11 +91,11 @@ const QuizPreview = () => {
             <div className="flex items-center justify-center space-x-2">
               {quiz.is_exam_mode && (
                 <span className="px-2 py-1 bg-red-900/20 text-red-400 text-xs font-medium rounded border border-red-500/30">
-                  MODE EXAMEN
+                  {t('quiz_preview_exam_mode')}
                 </span>
               )}
               <div className={`px-2 py-1 text-xs rounded font-medium border ${getDifficultyColor(quiz.difficulty)}`}>
-                {quiz.difficulty}
+                {t(`quizlist_difficulty_${quiz.difficulty.toLowerCase()}`, quiz.difficulty)}
               </div>
             </div>
           </div>
@@ -122,9 +124,9 @@ const QuizPreview = () => {
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
               <span>
-                {actualQuestionsCount > 0 
-                  ? `${actualQuestionsCount} question${actualQuestionsCount > 1 ? 's' : ''} possible${actualQuestionsCount > 1 ? 's' : ''}`
-                  : 'Questions possibles'
+                {actualQuestionsCount > 0
+                  ? t('quizlist_questions_possible_other', { count: actualQuestionsCount })
+                  : t('quizlist_questions_possible_none')
                 }
               </span>
             </div>
@@ -155,34 +157,34 @@ const QuizPreview = () => {
               <svg className="h-5 w-5 mr-2 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
-              Conseils pour réussir
+              {t('quiz_preview_tips_title')}
             </h3>
             <ul className="space-y-2 text-gray-300">
               {quiz.is_exam_mode && (
                 <li className="flex items-start">
                   <span className="text-red-400 mr-2">•</span>
-                  <span>Mode examen : aucune correction ne sera affichée pendant le quiz</span>
+                  <span>{t('quiz_preview_tips_exam_mode')}</span>
                 </li>
               )}
               {(quiz.is_exam_mode || (quiz.time_limit && quiz.time_limit > 0)) && (
                 <li className="flex items-start">
                   <span className="text-orange-400 mr-2">•</span>
-                  <span>Ce quiz a une limite de temps de {quiz.is_exam_mode ? '1h' : formatTimeLimit(quiz.time_limit)}</span>
+                  <span>{t('quiz_preview_tips_time_limit', { time: quiz.is_exam_mode ? '1h' : formatTimeLimit(quiz.time_limit) })}</span>
                 </li>
               )}
               <li className="flex items-start">
                 <span className="text-blue-400 mr-2">•</span>
-                <span>Lisez attentivement chaque question avant de répondre</span>
+                <span>{t('quiz_preview_tips_read_carefully')}</span>
               </li>
               {!quiz.is_exam_mode && (
                 <li className="flex items-start">
                   <span className="text-blue-400 mr-2">•</span>
-                  <span>Vous pouvez voir la correction après chaque question</span>
+                  <span>{t('quiz_preview_tips_correction')}</span>
                 </li>
               )}
               <li className="flex items-start">
                 <span className="text-blue-400 mr-2">•</span>
-                <span>Gardez un œil sur le temps restant affiché en haut à droite</span>
+                <span>{t('quiz_preview_tips_watch_time')}</span>
               </li>
             </ul>
           </div>
@@ -195,14 +197,14 @@ const QuizPreview = () => {
             variant="back"
             size="md"
           >
-            Retour
+            {t('quiz_preview_back')}
           </Button>
           <Button
             onClick={() => navigate(`/quiz/${id}`)}
             variant="primary"
             size="md"
           >
-            Commencer le quiz
+            {t('quiz_preview_start')}
           </Button>
         </div>
       </div>

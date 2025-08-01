@@ -67,7 +67,7 @@ const AdminExports = () => {
       link.click();
       link.remove();
     } catch (err) {
-      setError("Erreur lors de l'export : " + (err?.toString() || ""));
+      setError(t("admin_export_page_error_exporting") + (err?.toString() || ""));
     }
     setLoading("");
   };
@@ -95,7 +95,7 @@ const AdminExports = () => {
         {exportOptions.map((opt) => (
           <button
             key={opt.label}
-            className={`hover:cursor-pointer group relative overflow-hidden bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 w-full hover:bg-white/10 hover:border-white/20 transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-gray-500/5 flex flex-col items-center focus:outline-none focus:ring-2 focus:ring-gray-400 ${
+            className={`hover:cursor-pointer group relative overflow-hidden bg-white/5 backdrop-blur-sm border border-white/10 rounded-2xl p-6 w-full flex flex-col items-center transition-all duration-300 transform hover:-translate-y-1 hover:shadow-lg hover:shadow-gray-500/5 focus:outline-none focus:ring-1 focus:ring-gray-400 ${
               loading === `${opt.format}${opt.type ? `-${opt.type}` : ""}`
                 ? "opacity-60 cursor-not-allowed"
                 : "hover:cursor-pointer"
@@ -106,9 +106,9 @@ const AdminExports = () => {
             title={`Exporter ${opt.label}`}
           >
             {opt.icon}
-            <div className="text-xl font-bold mt-2">{opt.label}</div>
+            <div className="text-center text-xl font-bold mt-2 text-white">{opt.label}</div>
             {loading === `${opt.format}${opt.type ? `-${opt.type}` : ""}` && (
-              <p>Chargement ...</p>
+              <p>{t("admin_export_page_loading")}</p>
             )}
           </button>
         ))}

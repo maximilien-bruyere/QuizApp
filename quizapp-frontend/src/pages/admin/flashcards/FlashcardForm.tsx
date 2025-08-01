@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { api } from '../../../api/api';
 import { Button } from '../../components/buttons';
+import { useTranslation } from 'react-i18next';
 
 interface Category {
   category_id: number;
@@ -16,8 +17,8 @@ interface User {
   name: string;
   email: string;
 }
-
 export default function FlashcardForm() {
+  const { t } = useTranslation();
   const navigate = useNavigate();
   const { id } = useParams();
   const isEditing = !!id;
@@ -55,7 +56,7 @@ export default function FlashcardForm() {
       setCategories(categoriesRes.data);
       setUsers(usersRes.data);
     } catch (error) {
-      console.error('Erreur lors du chargement:', error);
+      console.error(t('admin_flashcard_form_page_error_loading'), error);
     } finally {
       setLoading(false);
     }
@@ -74,7 +75,7 @@ export default function FlashcardForm() {
         difficulty: flashcard.difficulty
       });
     } catch (error) {
-      console.error('Erreur lors du chargement de la flashcard:', error);
+      console.error(t('admin_flashcard_form_page_error_loading_flashcard'), error);
       navigate('/admin/flashcards');
     }
   };
@@ -98,7 +99,7 @@ export default function FlashcardForm() {
       
       navigate('/admin/flashcards');
     } catch (error) {
-      console.error('Erreur lors de la sauvegarde:', error);
+      console.error(t('admin_flashcard_form_page_error_saving'), error);
     } finally {
       setSaving(false);
     }
@@ -118,7 +119,7 @@ export default function FlashcardForm() {
   if (loading) {
     return (
       <div className="flex justify-center items-center min-h-[400px]">
-        <div className="text-gray-400">Chargement...</div>
+        <div className="text-gray-400">{t('admin_flashcard_form_page_loading')}</div>
       </div>
     );
   }
@@ -131,7 +132,7 @@ export default function FlashcardForm() {
           onClick={() => navigate('/admin/flashcards')}
           className="px-4 py-2 rounded-lg bg-gray-600 text-white hover:bg-gray-700 transition-all duration-200 transform hover:scale-105 active:scale-95"
         >
-          ← Retour
+          ← {t('admin_flashcard_form_page_back_button')}
         </button>
         
         <div className="flex items-center gap-4">
@@ -140,10 +141,10 @@ export default function FlashcardForm() {
           </div>
           <div>
             <h1 className="text-3xl font-bold text-white">
-              {isEditing ? 'Modifier la flashcard' : 'Nouvelle flashcard'}
+              {isEditing ? t('admin_flashcard_form_page_editing_flashcard') : t('admin_flashcard_form_page_new_flashcard')}
             </h1>
             <p className="text-gray-400 mt-1">
-              {isEditing ? 'Modifiez les informations de la carte' : 'Créez une nouvelle carte de révision'}
+              {isEditing ? t('admin_flashcard_form_page_editing_flashcard_description') : t('admin_flashcard_form_page_new_flashcard_description')}
             </p>
           </div>
         </div>
@@ -158,26 +159,26 @@ export default function FlashcardForm() {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="space-y-2">
               <label className="text-lg font-medium text-gray-300 flex items-center gap-2">
-                📝 Question/Terme (Face avant)
+                📝 {t('admin_flashcard_form_page_front_label')}
               </label>
               <textarea
                 value={formData.front}
                 onChange={(e) => setFormData({ ...formData, front: e.target.value })}
                 className="w-full p-4 bg-gray-800/50 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:border-orange-500/50 outline-none transition-colors duration-300 resize-vertical min-h-[150px]"
-                placeholder="Entrez la question ou le terme à apprendre..."
+                placeholder={t('admin_flashcard_form_page_front_placeholder')}
                 required
               />
             </div>
             
             <div className="space-y-2">
               <label className="text-lg font-medium text-gray-300 flex items-center gap-2">
-                💡 Réponse/Définition (Face arrière)
+                💡 {t('admin_flashcard_form_page_back_label')}
               </label>
               <textarea
                 value={formData.back}
                 onChange={(e) => setFormData({ ...formData, back: e.target.value })}
                 className="w-full p-4 bg-gray-800/50 border border-white/10 rounded-xl text-white placeholder-gray-400 focus:border-orange-500/50 outline-none transition-colors duration-300 resize-vertical min-h-[150px]"
-                placeholder="Entrez la réponse ou la définition..."
+                placeholder={t('admin_flashcard_form_page_back_placeholder')}
                 required
               />
             </div>
@@ -187,7 +188,7 @@ export default function FlashcardForm() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                📂 Catégorie
+                📂 {t('admin_flashcard_form_page_category_label')}
               </label>
               <select
                 value={formData.category_id}
@@ -195,7 +196,7 @@ export default function FlashcardForm() {
                 className="w-full p-3 bg-gray-800/50 border border-white/10 rounded-xl text-white focus:border-orange-500/50 outline-none transition-colors duration-300"
                 required
               >
-                <option value="">Choisir une catégorie...</option>
+                <option value="">{t('admin_flashcard_form_page_category_placeholder')}</option>
                 {categories.map((category) => (
                   <option key={category.category_id} value={category.category_id}>
                     {category.name} {category.subject?.name && `(${category.subject.name})`}
@@ -206,7 +207,7 @@ export default function FlashcardForm() {
             
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                👤 Créateur
+                👤 {t('admin_flashcard_form_page_creator_label')}
               </label>
               <select
                 value={formData.user_id}
@@ -214,7 +215,7 @@ export default function FlashcardForm() {
                 className="w-full p-3 bg-gray-800/50 border border-white/10 rounded-xl text-white focus:border-orange-500/50 outline-none transition-colors duration-300"
                 required
               >
-                <option value="">Choisir un créateur...</option>
+                <option value="">{t('admin_flashcard_form_page_creator_placeholder')}</option>
                 {users.map((user) => (
                   <option key={user.user_id} value={user.user_id}>
                     {user.name}
@@ -225,18 +226,18 @@ export default function FlashcardForm() {
             
             <div className="space-y-2">
               <label className="text-sm font-medium text-gray-300 flex items-center gap-2">
-                {getDifficultyIcon(formData.difficulty)} Difficulté
+                {getDifficultyIcon(formData.difficulty)} {t('admin_flashcard_form_page_difficulty_label')}
               </label>
               <select
                 value={formData.difficulty}
                 onChange={(e) => setFormData({ ...formData, difficulty: e.target.value as any })}
                 className="w-full p-3 bg-gray-800/50 border border-white/10 rounded-xl text-white focus:border-orange-500/50 outline-none transition-colors duration-300"
               >
-                <option value="NOUVEAU">🆕 Nouveau</option>
-                <option value="DIFFICILE">🔴 Difficile</option>
-                <option value="MOYEN">🟡 Moyen</option>
-                <option value="FACILE">🟢 Facile</option>
-                <option value="ACQUISE">✅ Acquise</option>
+                <option value="NOUVEAU">🆕 {t('admin_flashcards_page_difficulty_new')}</option>
+                <option value="DIFFICILE">🔴 {t('admin_flashcards_page_difficulty_hard')}</option>
+                <option value="MOYEN">🟡 {t('admin_flashcards_page_difficulty_medium')}</option>
+                <option value="FACILE">🟢 {t('admin_flashcards_page_difficulty_easy')}</option>
+                <option value="ACQUISE">✅ {t('admin_flashcards_page_difficulty_learned')}</option>
               </select>
             </div>
           </div>
@@ -245,15 +246,15 @@ export default function FlashcardForm() {
           {formData.front && formData.back && (
             <div className="space-y-4">
               <h3 className="text-lg font-medium text-gray-300 flex items-center gap-2">
-                👁️ Aperçu de la carte
+                👁️ {t('admin_flashcard_form_page_preview_title')}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div className="bg-gradient-to-br from-orange-500/10 to-amber-500/10 border border-orange-500/20 rounded-xl p-4">
-                  <div className="text-xs text-orange-400 font-medium mb-2">FACE AVANT</div>
+                  <div className="text-xs text-orange-400 font-medium mb-2">{t('admin_flashcard_form_page_preview_front')}</div>
                   <div className="text-white font-medium">{formData.front}</div>
                 </div>
                 <div className="bg-gradient-to-br from-blue-500/10 to-purple-500/10 border border-blue-500/20 rounded-xl p-4">
-                  <div className="text-xs text-blue-400 font-medium mb-2">FACE ARRIÈRE</div>
+                  <div className="text-xs text-blue-400 font-medium mb-2">{t('admin_flashcard_form_page_preview_back')}</div>
                   <div className="text-white font-medium">{formData.back}</div>
                 </div>
               </div>
@@ -269,7 +270,7 @@ export default function FlashcardForm() {
               className="flex-1 md:flex-none"
               disabled={saving}
             >
-              Annuler
+              {t('admin_flashcard_form_page_cancel_button')}
             </Button>
             <Button
               type="submit"
@@ -277,7 +278,7 @@ export default function FlashcardForm() {
               className="flex-1"
               disabled={saving}
             >
-              {saving ? 'Enregistrement...' : (isEditing ? 'Mettre à jour' : 'Créer la flashcard')}
+              {saving ? t('admin_flashcard_form_page_saving') : (isEditing ? t('admin_flashcard_form_page_update_button') : t('admin_flashcard_form_page_create_button'))}
             </Button>
           </div>
         </form>

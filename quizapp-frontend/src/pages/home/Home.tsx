@@ -66,8 +66,9 @@ const Home = () => {
       {isAuthenticated && user ? (
         <div className="flex justify-center my-6 md:my-8 px-4 animate-fade-in-up animate-delay-300 py-10">
           <Button
-            onClick={() => navigate("/formations")}
+            onClick={() => navigate("/#")}
             variant="primary"
+            title={t("button_in_construction")}
             size="lg"
           >
             {t("home_page_button_already_login")}

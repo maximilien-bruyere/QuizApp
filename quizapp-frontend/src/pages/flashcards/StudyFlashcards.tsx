@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
+import { useTranslation } from 'react-i18next';
+import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { api } from '../../api/api';
 import '../../App.css';
 import Button from '../components/buttons/Button';
@@ -19,7 +20,9 @@ interface Flashcard {
 }
 
 const StudyFlashcards = () => {
+  const { t } = useTranslation();
   const { categoryId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const [flashcards, setFlashcards] = useState<Flashcard[]>([]);
   const [currentIndex, setCurrentIndex] = useState(0);
@@ -32,19 +35,27 @@ const StudyFlashcards = () => {
     if (categoryId) {
       loadFlashcards();
     }
-  }, [categoryId]);
+    // eslint-disable-next-line
+  }, [categoryId, location.search]);
 
   const loadFlashcards = async () => {
     try {
       const response = await api.get(`/flashcards/category/${categoryId}`);
-      const cards = response.data;
+      let cards = response.data;
+
+      // Récupérer le paramètre difficulty de l'URL
+      const params = new URLSearchParams(location.search);
+      const difficulty = params.get('difficulty');
+      if (difficulty && difficulty !== 'ALL') {
+        cards = cards.filter((card: Flashcard) => card.difficulty === difficulty);
+      }
       setFlashcards(cards);
-      
+
       // Créer un tableau d'indices mélangés pour le mode aléatoire
       const indices = Array.from({ length: cards.length }, (_, i) => i);
       setShuffledIndices(shuffleArray([...indices]));
     } catch (error) {
-      console.error('Erreur lors du chargement des flashcards:', error);
+      console.error(t('admin_flashcards_page_loading_error'), error);
     } finally {
       setLoading(false);
     }
@@ -85,7 +96,6 @@ const StudyFlashcards = () => {
   };
 
   const flipCard = () => {
-    console.log('Flip card clicked! Current isFlipped:', isFlipped, '-> New isFlipped:', !isFlipped);
     setIsFlipped(!isFlipped);
   };
 
@@ -123,24 +133,24 @@ const StudyFlashcards = () => {
         )
       );
     } catch (error) {
-      console.error('Erreur lors de la mise à jour de la difficulté:', error);
+      console.error(t('admin_flashcards_page_difficulty_update_error'), error);
     }
   };
 
   const getDifficultyStyle = (difficulty: string) => {
     switch (difficulty) {
       case 'NOUVEAU':
-        return { bg: 'bg-blue-600', text: 'text-white', label: '🆕 Nouveau', color: 'blue' };
+        return { bg: 'bg-blue-600', text: 'text-white', label: '🆕 ' + t('admin_flashcards_page_difficulty_new'), color: 'blue' };
       case 'DIFFICILE':
-        return { bg: 'bg-red-600', text: 'text-white', label: '🔴 Difficile', color: 'red' };
+        return { bg: 'bg-red-600', text: 'text-white', label: '🔴 ' + t('admin_flashcards_page_difficulty_hard'), color: 'red' };
       case 'MOYEN':
-        return { bg: 'bg-orange-600', text: 'text-white', label: '🟡 Moyen', color: 'orange' };
+        return { bg: 'bg-orange-600', text: 'text-white', label: '🟡 ' + t('admin_flashcards_page_difficulty_medium'), color: 'orange' };
       case 'FACILE':
-        return { bg: 'bg-green-600', text: 'text-white', label: '🟢 Facile', color: 'green' };
+        return { bg: 'bg-green-600', text: 'text-white', label: '🟢 ' + t('admin_flashcards_page_difficulty_easy'), color: 'green' };
       case 'ACQUISE':
-        return { bg: 'bg-emerald-600', text: 'text-white', label: '✅ Acquise', color: 'emerald' };
+        return { bg: 'bg-emerald-600', text: 'text-white', label: '✅ ' + t('admin_flashcards_page_difficulty_earned'), color: 'emerald' };
       default:
-        return { bg: 'bg-blue-600', text: 'text-white', label: '🆕 Nouveau', color: 'blue' };
+        return { bg: 'bg-blue-600', text: 'text-white', label: '🆕 ' + t('admin_flashcards_page_difficulty_new'), color: 'blue' };
     }
   };
 
@@ -185,14 +195,14 @@ const StudyFlashcards = () => {
         <div className="container mx-auto px-4 py-8">
           <div className="text-center py-12">
             <div className="text-6xl mb-4">📚</div>
-            <h2 className="text-2xl font-bold text-white mb-4">Aucune flashcard disponible</h2>
-            <p className="text-gray-400 mb-6">Il n'y a pas encore de flashcards dans cette catégorie.</p>
+            <h2 className="text-2xl font-bold text-white mb-4">{t('study_flashcards_no_flashcards_title')}</h2>
+            <p className="text-gray-400 mb-6">{t('study_flashcards_no_flashcards_desc')}</p>
             <Button
               onClick={() => navigate('/flashcards')}
               variant="primary"
               className="px-6 py-3 rounded-lg"
             >
-              ← Retour aux catégories
+              ← {t('study_flashcards_back_to_categories')}
             </Button>
           </div>
         </div>
@@ -215,7 +225,7 @@ const StudyFlashcards = () => {
                          transition-all duration-200 active:bg-gray-800
                          text-sm sm:text-base order-1 sm:order-1"
             >
-              ← Retour
+              ← {t('study_flashcards_back')}
             </button>
             
             <div className="text-center flex-1 order-2 sm:order-2">
@@ -231,20 +241,20 @@ const StudyFlashcards = () => {
               <button
                 onClick={toggleStudyMode}
                 className={`px-3 sm:px-4 py-2 rounded-lg transition-all duration-200 active:scale-95
-                           text-sm sm:text-base ${
+                           text-sm sm:text-base hover:cursor-pointer ${
                   studyMode === 'random' 
                     ? 'bg-yellow-600 hover:bg-yellow-700 active:bg-yellow-800' 
                     : 'bg-gray-600 hover:bg-gray-700 active:bg-gray-800'
                 } text-white`}
               >
-                {studyMode === 'random' ? '🔀 Aléatoire' : '📋 Ordre'}
+                {studyMode === 'random' ? t('study_flashcards_mode_random') : t('study_flashcards_mode_order')}
               </button>
               <Button
                 onClick={resetStudy}
                 variant="primary"
                 className="px-3 sm:px-4 py-2 rounded-lg active:scale-95 text-sm sm:text-base"
               >
-                🔄 Recommencer
+                🔄 {t('study_flashcards_restart')}
               </Button>
             </div>
           </div>
@@ -259,7 +269,7 @@ const StudyFlashcards = () => {
           </div>
 
           <div className="text-center text-gray-400 text-sm sm:text-base">
-            Carte {currentIndex + 1} sur {flashcards.length}
+            {t('study_flashcards_progress', { current: currentIndex + 1, total: flashcards.length, defaultValue: `Carte ${currentIndex + 1} sur ${flashcards.length}` })}
           </div>
 
           {/* Indicateur de difficulté - Responsive */}
@@ -282,13 +292,13 @@ const StudyFlashcards = () => {
                                   p-4 sm:p-6 lg:p-8 rounded-xl shadow-2xl min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] 
                                   flex items-center justify-center">
                     <div className="text-center w-full">
-                      <div className="text-sm sm:text-lg mb-2 sm:mb-4 text-purple-200">Question</div>
+                      <div className="text-sm sm:text-lg mb-2 sm:mb-4 text-purple-200">{t('study_flashcards_question')}</div>
                       <div className={`${getTextSize(currentCard?.front || '')} font-medium leading-relaxed 
                                       break-words overflow-hidden text-center px-2`}>
                         {currentCard?.front}
                       </div>
                       <div className="text-xs sm:text-sm text-purple-200 mt-4 sm:mt-6 group-hover:text-white transition-colors duration-300">
-                        Cliquez pour voir la réponse
+                        {t('study_flashcards_click_to_see_answer')}
                       </div>
                     </div>
                   </div>
@@ -299,13 +309,13 @@ const StudyFlashcards = () => {
                                   p-4 sm:p-6 lg:p-8 rounded-xl shadow-2xl min-h-[300px] sm:min-h-[350px] lg:min-h-[400px] 
                                   flex items-center justify-center">
                     <div className="text-center w-full">
-                      <div className="text-sm sm:text-lg mb-2 sm:mb-4 text-green-200">Réponse</div>
+                      <div className="text-sm sm:text-lg mb-2 sm:mb-4 text-green-200">{t('study_flashcards_answer')}</div>
                       <div className={`${getTextSize(currentCard?.back || '')} font-medium leading-relaxed 
                                       break-words overflow-hidden text-center px-2`}>
                         {currentCard?.back}
                       </div>
                       <div className="text-xs sm:text-sm text-green-200 mt-4 sm:mt-6 group-hover:text-white transition-colors duration-300">
-                        Cliquez pour voir la question
+                        {t('study_flashcards_click_to_see_question', 'Cliquez pour voir la question')}
                       </div>
                     </div>
                   </div>
@@ -326,7 +336,7 @@ const StudyFlashcards = () => {
                   : 'bg-gray-600 hover:bg-gray-500 text-white cursor-pointer active:bg-gray-400'
               }`}
             >
-              ← Précédente
+              ← {t('study_flashcards_previous')}
             </button>
             
             <button
@@ -335,7 +345,7 @@ const StudyFlashcards = () => {
                          hover:bg-purple-700 transition-all duration-200 cursor-pointer active:bg-purple-800
                          font-medium text-sm sm:text-base"
             >
-              {isFlipped ? 'Voir Question' : 'Voir Réponse'}
+              {isFlipped ? t('study_flashcards_see_question') : t('study_flashcards_see_answer')}
             </button>
             
             <button
@@ -348,14 +358,14 @@ const StudyFlashcards = () => {
                   : 'bg-gray-600 hover:bg-gray-500 text-white cursor-pointer active:bg-gray-400'
               }`}
             >
-              Suivante →
+              {t('study_flashcards_next')}
             </button>
           </div>
 
           {/* Boutons de difficulté - Responsive */}
           <div className="bg-gray-800 rounded-lg p-4 sm:p-6">
             <h3 className="text-white text-center mb-3 sm:mb-4 font-medium text-sm sm:text-base">
-              Comment évaluez-vous cette carte ?
+              {t('study_flashcards_how_to_rate', 'Comment évaluez-vous cette carte ?')}
             </h3>
             <div className="grid grid-cols-2 sm:flex sm:justify-center gap-2 sm:gap-3">
               <button
@@ -364,7 +374,7 @@ const StudyFlashcards = () => {
                            transition-all duration-200 active:bg-red-900
                            text-xs sm:text-sm font-medium"
               >
-                🔴 Difficile
+                🔴 {t('study_flashcards_difficult')}
               </button>
               <button
                 onClick={() => updateDifficulty('MOYEN')}
@@ -372,7 +382,7 @@ const StudyFlashcards = () => {
                            transition-all duration-200 active:bg-orange-800
                            text-xs sm:text-sm font-medium"
               >
-                🟡 Moyen
+                🟡 {t('study_flashcards_medium')}
               </button>
               <button
                 onClick={() => updateDifficulty('FACILE')}
@@ -380,7 +390,7 @@ const StudyFlashcards = () => {
                            transition-all duration-200 active:bg-green-800
                            text-xs sm:text-sm font-medium"
               >
-                🟢 Facile
+                🟢 {t('study_flashcards_easy')}
               </button>
               <button
                 onClick={() => updateDifficulty('ACQUISE')}
@@ -388,7 +398,7 @@ const StudyFlashcards = () => {
                            transition-all duration-200 active:bg-emerald-800
                            text-xs sm:text-sm font-medium"
               >
-                ✅ Acquise
+                ✅ {t('study_flashcards_learned')}
               </button>
               <button
                 onClick={() => updateDifficulty('NOUVEAU')}
@@ -396,15 +406,15 @@ const StudyFlashcards = () => {
                            transition-all duration-200 active:bg-blue-800
                            text-xs sm:text-sm font-medium"
               >
-                🆕 Nouveau
+                🆕 {t('study_flashcards_new')}
               </button>
             </div>
           </div>
 
           {/* Raccourcis clavier - Responsive */}
           <div className="text-center text-gray-400 text-xs sm:text-sm space-y-1 hidden sm:block">
-            <p>Raccourcis clavier:</p>
-            <p>Espace: Retourner la carte | ← →: Navigation | R: Recommencer</p>
+            <p>{t('study_flashcards_shortcuts_title')}</p>
+            <p>{t('study_flashcards_shortcuts_desc')}</p>
           </div>
         </div>
       </div>
