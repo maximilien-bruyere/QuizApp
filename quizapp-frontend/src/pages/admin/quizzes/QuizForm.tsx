@@ -42,8 +42,8 @@ interface Subject {
 }
 
 const QUESTION_TYPES = [
-  { value: "QCM", label: "QCM" },
-  { value: "QCU", label: "QCU" },
+  { value: "MULTIPLE", label: "QCM" },
+  { value: "SINGLE", label: "QCU" },
   { value: "MATCHING", label: "Appariement" },
 ];
 
@@ -91,7 +91,7 @@ export default function QuizForm() {
           category_id: res.data.category_id,
           questions: (res.data.questions || []).map((q: any) => ({
             content: q.content,
-            type: q.type === "SINGLE" ? "QCU" : q.type === "MULTIPLE" ? "QCM" : q.type,
+            type: q.type,
             image_url: q.image_url || "",
             explanation: q.explanation || "",
             options: (q.options || []).map((opt: any) => ({
@@ -138,7 +138,7 @@ export default function QuizForm() {
         ...prev.questions,
         {
           content: "",
-          type: "QCM",
+          type: "MULTIPLE",
           image_url: "",
           explanation: "",
           options: [{ text: "", is_correct: false }],
@@ -516,7 +516,7 @@ export default function QuizForm() {
                         )}
                         {/* Ajouter option/paires */}
                         <div className="flex items-center justify-between mb-2">
-                          {(q.type === "QCM" || q.type === "QCU") && (
+                          {(q.type === "MULTIPLE" || q.type === "SINGLE") && (
                             <>
                               <span className="text-sm text-gray-300 font-semibold">Options</span>
                               <Button
@@ -545,7 +545,7 @@ export default function QuizForm() {
                           )}
                         </div>
                         {/* Options ou paires */}
-                        {(q.type === "QCM" || q.type === "QCU") && (
+                        {(q.type === "MULTIPLE" || q.type === "SINGLE") && (
                           <div className="grid grid-cols-1 gap-2 mb-2">
                             {q.options.map((opt, oIdx) => (
                               <div key={oIdx} className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-3 py-2 transition-shadow focus-within:shadow-lg">
@@ -559,9 +559,9 @@ export default function QuizForm() {
                                 />
                                 <label className="flex items-center gap-1 text-xs text-gray-300">
                                   <input
-                                    type={q.type === "QCM" ? "checkbox" : "radio"}
+                                    type={q.type === "MULTIPLE" ? "checkbox" : "radio"}
                                     checked={!!opt.is_correct}
-                                    onChange={e => handleOptionChange(qIdx, oIdx, "is_correct", q.type === "QCM" ? e.target.checked : true)}
+                                    onChange={e => handleOptionChange(qIdx, oIdx, "is_correct", q.type === "MULTIPLE" ? e.target.checked : true)}
                                     name={`correct-${qIdx}`}
                                   />
                                   <span className="hidden md:inline">Correcte</span>
