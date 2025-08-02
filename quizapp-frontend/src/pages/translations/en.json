@@ -527,7 +527,7 @@
   "quiz_player_validate_answer": "Validate my answer",
   "quiz_player_finish_quiz": "Finish the quiz",
   "quiz_player_next_question": "Next question",
-  "quiz_player_question_number": "Question {{number}} / {{total}}",
+  "quiz_player_question_number": "Question {{current}} / {{total}}",
   "quiz_player_matching_answers": "Answers:",
   "quiz_player_points_for_question": "Points for this question:",
   "quiz_player_explanation": "Explanation",

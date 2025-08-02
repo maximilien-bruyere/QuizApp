@@ -433,7 +433,7 @@ const QuizPlayer = () => {
             )}
           </div>
           <div className="text-center text-xs sm:text-sm text-gray-400 mb-3 sm:mb-4">
-            {t('quiz_player_question_number', { number: currentIndex + 1, total: shuffledQuestions.length })}
+            {t('quiz_player_question_number', { current: currentIndex + 1, total: shuffledQuestions.length })}
           </div>
           <div className="w-full bg-gray-700 rounded-full h-2 sm:h-3 mb-4 sm:mb-6">
             <div
