@@ -92,15 +92,15 @@ export default function QuizForm() {
             type: q.type,
             image_url: q.image_url || "",
             explanation: q.explanation || "",
-            options: (q.options || []).map((opt: any) => ({
+            options: Array.isArray(q.options) ? q.options.map((opt: any) => ({
               option_id: opt.option_id,
               text: opt.text,
               is_correct: opt.is_correct,
-            })),
-            pairs: (q.pairs || []).map((p: any) => ({
+            })) : [],
+            pairs: Array.isArray(q.pairs) ? q.pairs.map((p: any) => ({
               left: p.left,
               right: p.right,
-            })),
+            })) : [],
           })),
         });
       });
@@ -173,12 +173,17 @@ export default function QuizForm() {
   const handleQuestionChange = (qIdx: number, field: string, value: any) => {
     setFormData((prev) => {
       const questions = [...prev.questions];
-      if (field === "type" && questions[qIdx].type !== value) {
+      if (
+        field === "type" &&
+        questions[qIdx].type !== value &&
+        (questions[qIdx].type === "MATCHING" || value === "MATCHING")
+      ) {
         questions[qIdx] = {
           ...questions[qIdx],
           type: value,
-          options: [{ text: "", is_correct: false }],
-          pairs: [],
+          options:
+            value === "MATCHING" ? [] : [{ text: "", is_correct: false }],
+          pairs: value === "MATCHING" ? [{ left: "", right: "" }] : [],
         };
       } else {
         questions[qIdx] = { ...questions[qIdx], [field]: value };
@@ -276,7 +281,6 @@ export default function QuizForm() {
     setLoading(true);
     setError(null);
 
-    // Vérification : chaque question SINGLE ou MULTIPLE doit avoir au moins une option correcte
     for (const [idx, q] of formData.questions.entries()) {
       if (
         (q.type === "SINGLE" || q.type === "MULTIPLE") &&
