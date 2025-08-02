@@ -23,7 +23,7 @@ export class ExportController {
 
   @Get('db')
   exportDb(@Res() res: Response): void {
-    const dbPath = 'resources/quizapp-backend/quizapp-database/quizapp.db';
+    const dbPath = 'quizapp-database/quizapp.db';
     res.download(dbPath, 'quizapp.db');
   }
 
