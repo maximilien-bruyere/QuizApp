@@ -25,13 +25,7 @@ export class ExportController {
 
   @Get('db')
   exportDb(@Res() res: Response): void {
-    // Exemple de chemin, adapte si besoin
     const dbPath = path.join(process.cwd(), 'resources', 'quizapp-backend', 'quizapp-database', 'quizapp.db');
-
-    // Log dans la console et dans backend-error.log
-    const logMsg = `[${new Date().toISOString()}] Export DB path: ${dbPath}\n`;
-    fs.appendFileSync('backend-error.log', logMsg);
-
     res.download(dbPath, 'quizapp.db');
   }
 
