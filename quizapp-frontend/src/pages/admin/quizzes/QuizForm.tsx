@@ -247,33 +247,43 @@ export default function QuizForm() {
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    try {
-      const payload = {
-        ...formData,
-        questions: formData.questions.map((q) => ({
-          ...q,
-          options: q.options.map((opt) => ({
-            text: opt.text,
-            is_correct: opt.is_correct,
-          })),
-          pairs: q.pairs.map((p) => ({ left: p.left, right: p.right })),
-        })),
-      };
-      if (isEditing) {
-        await api.patch(`/quizzes/${id}`, payload);
-      } else {
-        await api.post("/quizzes", payload);
-      }
-      navigate("/admin/quizzes");
-    } catch (err) {
-      setError(t("admin_quiz_form_page_error_saving"));
-    } finally {
+  e.preventDefault();
+  setLoading(true);
+  setError(null);
+
+  // Vérification : chaque question SINGLE ou MULTIPLE doit avoir au moins une option correcte
+  for (const [idx, q] of formData.questions.entries()) {
+    if ((q.type === "SINGLE" || q.type === "MULTIPLE") && (!q.options.some(opt => opt.is_correct))) {
       setLoading(false);
+      setError(`La question ${idx + 1} doit avoir au moins une option correcte.`);
+      return;
     }
-  };
+  }
+
+  try {
+    const payload = {
+      ...formData,
+      questions: formData.questions.map((q) => ({
+        ...q,
+        options: q.options.map((opt) => ({
+          text: opt.text,
+          is_correct: opt.is_correct,
+        })),
+        pairs: q.pairs.map((p) => ({ left: p.left, right: p.right })),
+      })),
+    };
+    if (isEditing) {
+      await api.patch(`/quizzes/${id}`, payload);
+    } else {
+      await api.post("/quizzes", payload);
+    }
+    navigate("/admin/quizzes");
+  } catch (err) {
+    setError(t("admin_quiz_form_page_error_saving"));
+  } finally {
+    setLoading(false);
+  }
+};
 
   const selectedCategory = categories.find((c) => c.category_id === formData.category_id);
 
