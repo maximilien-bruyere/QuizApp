@@ -25,7 +25,9 @@
   "dependencies": {
     "prisma": "^6.11.1",
     "sqlite3": "^5.1.7",
-    "tsx": "^4.20.3"
+    "tmp": "^0.2.5",
+    "tsx": "^4.20.3",
+    "vite": "^7.1.5"
   },
   "devDependencies": {
     "@types/cacheable-request": "^6.0.3",
