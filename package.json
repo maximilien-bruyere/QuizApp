@@ -25,8 +25,7 @@
   "dependencies": {
     "prisma": "^6.11.1",
     "sqlite3": "^5.1.7",
-    "tsx": "^4.20.3",
-    "vite": "^7.1.5"
+    "tsx": "^4.20.3"
   },
   "devDependencies": {
     "@types/cacheable-request": "^6.0.3",
@@ -44,7 +43,8 @@
     "esbuild": "^0.25.7",
     "tmp": "^0.2.5",
     "ts-node": "^10.9.2",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vite": "^7.1.5"
   },
   "build": {
     "files": [
