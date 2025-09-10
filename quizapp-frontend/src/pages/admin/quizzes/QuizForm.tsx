@@ -92,15 +92,15 @@ export default function QuizForm() {
             type: q.type,
             image_url: q.image_url || "",
             explanation: q.explanation || "",
-            options: Array.isArray(q.options) ? q.options.map((opt: any) => ({
+            options: (q.options || []).map((opt: any) => ({
               option_id: opt.option_id,
               text: opt.text,
               is_correct: opt.is_correct,
-            })) : [],
-            pairs: Array.isArray(q.pairs) ? q.pairs.map((p: any) => ({
+            })),
+            pairs: (q.pairs || []).map((p: any) => ({
               left: p.left,
               right: p.right,
-            })) : [],
+            })),
           })),
         });
       });

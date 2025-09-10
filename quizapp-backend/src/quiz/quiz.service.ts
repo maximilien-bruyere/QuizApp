@@ -188,7 +188,7 @@ export class QuizService {
             },
           });
 
-          if (q.options && (q.type === 'MULTIPLE' || q.type === 'SINGLE')) {
+          if (q.options && (q.type === 'QCM' || q.type === 'QCU')) {
             for (const opt of q.options) {
               await this.prisma.option.create({
                 data: {
